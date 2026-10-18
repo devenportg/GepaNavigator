@@ -22,11 +22,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 1832416640,
-      "version": 1,
-      "versionNonce": 1289560020,
+      "version": 2,
+      "versionNonce": 1266975667,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340481146,
       "link": null,
       "locked": false,
       "text": "ГепаНавигатор · Архитектура системы (Этап 1 · Бизнес-аналитика)",
@@ -37,7 +37,12 @@
       "containerId": null,
       "originalText": "ГепаНавигатор · Архитектура системы (Этап 1 · Бизнес-аналитика)",
       "lineHeight": 1.2,
-      "baseline": 26.0
+      "baseline": 26,
+      "index": "a0",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "e224c91f23714460",
@@ -58,11 +63,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 118581956,
-      "version": 1,
-      "versionNonce": 1563579289,
+      "version": 2,
+      "versionNonce": 2143094013,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340481146,
       "link": null,
       "locked": false,
       "text": "Контекстная диаграмма и основные компоненты",
@@ -73,7 +78,12 @@
       "containerId": null,
       "originalText": "Контекстная диаграмма и основные компоненты",
       "lineHeight": 1.2,
-      "baseline": 16.0
+      "baseline": 16,
+      "index": "a1",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "b0ee54c811d24c0d",
@@ -96,21 +106,23 @@
         "type": 3
       },
       "seed": 1599035626,
-      "version": 1,
-      "versionNonce": 1292648200,
+      "version": 2,
+      "versionNonce": 708810067,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1,
+      "updated": 1792340481146,
       "link": null,
-      "locked": false
+      "locked": false,
+      "index": "a2",
+      "created": null
     },
     {
       "id": "3ff8b2acaf6b4b0f",
       "type": "text",
       "x": 440,
       "y": 174,
-      "width": 384.0,
-      "height": 24.0,
+      "width": 384,
+      "height": 24,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -123,11 +135,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 1454855485,
-      "version": 1,
-      "versionNonce": 1652982217,
+      "version": 2,
+      "versionNonce": 1261264221,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340481146,
       "link": null,
       "locked": false,
       "text": "ГЕПАНАВИГАТОР (модуль ГИС ЭЗ РТ)",
@@ -138,14 +150,19 @@
       "containerId": null,
       "originalText": "ГЕПАНАВИГАТОР (модуль ГИС ЭЗ РТ)",
       "lineHeight": 1.2,
-      "baseline": 20.0
+      "baseline": 20,
+      "index": "a3",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "96e91c90c60c4a4f",
       "type": "text",
       "x": 440,
       "y": 202,
-      "width": 624.0,
+      "width": 624,
       "height": 15.6,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -159,11 +176,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 1788388670,
-      "version": 1,
-      "versionNonce": 1308376350,
+      "version": 2,
+      "versionNonce": 1323791091,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340481146,
       "link": null,
       "locked": false,
       "text": "Цифровой модуль диспансерного наблюдения за пациентами с хроническими гепатитами",
@@ -174,15 +191,20 @@
       "containerId": null,
       "originalText": "Цифровой модуль диспансерного наблюдения за пациентами с хроническими гепатитами",
       "lineHeight": 1.2,
-      "baseline": 13.0
+      "baseline": 13,
+      "index": "a4",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "e8efb4d750af420c",
       "type": "rectangle",
-      "x": 450.0,
-      "y": 240.0,
-      "width": 270.0,
-      "height": 90.0,
+      "x": 450,
+      "y": 240,
+      "width": 270,
+      "height": 90,
       "angle": 0,
       "strokeColor": "#f57f17",
       "backgroundColor": "#ffffff",
@@ -197,8 +219,8 @@
         "type": 3
       },
       "seed": 1322122977,
-      "version": 1,
-      "versionNonce": 2146607492,
+      "version": 2,
+      "versionNonce": 196323773,
       "isDeleted": false,
       "boundElements": [
         {
@@ -206,15 +228,17 @@
           "type": "text"
         }
       ],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
-      "locked": false
+      "locked": false,
+      "index": "a5",
+      "created": null
     },
     {
       "id": "affa6712980c4d2b",
       "type": "text",
-      "x": 462.0,
-      "y": 252.0,
+      "x": 462,
+      "y": 252,
       "width": 226.2,
       "height": 31.2,
       "angle": 0,
@@ -229,11 +253,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 2105001354,
-      "version": 1,
-      "versionNonce": 537782216,
+      "version": 2,
+      "versionNonce": 2046991507,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "text": "Регистр пациентов\nавтопостановка/снятие с учёта",
@@ -244,15 +268,20 @@
       "containerId": "e8efb4d750af420c",
       "originalText": "Регистр пациентов\nавтопостановка/снятие с учёта",
       "lineHeight": 1.2,
-      "baseline": 28.599999999999998
+      "baseline": 28.599999999999998,
+      "index": "a6",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "bfab21267b964a56",
       "type": "rectangle",
-      "x": 740.0,
-      "y": 240.0,
-      "width": 270.0,
-      "height": 90.0,
+      "x": 740,
+      "y": 240,
+      "width": 270,
+      "height": 90,
       "angle": 0,
       "strokeColor": "#f57f17",
       "backgroundColor": "#ffffff",
@@ -267,8 +296,8 @@
         "type": 3
       },
       "seed": 72701240,
-      "version": 1,
-      "versionNonce": 907741688,
+      "version": 2,
+      "versionNonce": 309422621,
       "isDeleted": false,
       "boundElements": [
         {
@@ -276,15 +305,17 @@
           "type": "text"
         }
       ],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
-      "locked": false
+      "locked": false,
+      "index": "a7",
+      "created": null
     },
     {
       "id": "e1f105a7c1794f32",
       "type": "text",
-      "x": 752.0,
-      "y": 252.0,
+      "x": 752,
+      "y": 252,
       "width": 265.2,
       "height": 31.2,
       "angle": 0,
@@ -299,11 +330,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 1027070947,
-      "version": 1,
-      "versionNonce": 956026880,
+      "version": 2,
+      "versionNonce": 390566451,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "text": "Клинический слой (мотор правил КР)\nплан наблюдения по КР/168н, УВО-12",
@@ -314,15 +345,20 @@
       "containerId": "bfab21267b964a56",
       "originalText": "Клинический слой (мотор правил КР)\nплан наблюдения по КР/168н, УВО-12",
       "lineHeight": 1.2,
-      "baseline": 28.599999999999998
+      "baseline": 28.599999999999998,
+      "index": "a8",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "97b800c8dbb64bc0",
       "type": "rectangle",
-      "x": 450.0,
-      "y": 340.0,
-      "width": 270.0,
-      "height": 90.0,
+      "x": 450,
+      "y": 340,
+      "width": 270,
+      "height": 90,
       "angle": 0,
       "strokeColor": "#f57f17",
       "backgroundColor": "#ffffff",
@@ -337,8 +373,8 @@
         "type": 3
       },
       "seed": 600379402,
-      "version": 1,
-      "versionNonce": 937339294,
+      "version": 2,
+      "versionNonce": 274210429,
       "isDeleted": false,
       "boundElements": [
         {
@@ -346,15 +382,17 @@
           "type": "text"
         }
       ],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
-      "locked": false
+      "locked": false,
+      "index": "a9",
+      "created": null
     },
     {
       "id": "7a541ee8e4854365",
       "type": "text",
-      "x": 462.0,
-      "y": 352.0,
+      "x": 462,
+      "y": 352,
       "width": 296.4,
       "height": 31.2,
       "angle": 0,
@@ -369,11 +407,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 177190018,
-      "version": 1,
-      "versionNonce": 232975948,
+      "version": 2,
+      "versionNonce": 1469895635,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "text": "Рабочее место врача · одно окно\nсписок, карточка, чек-лист, заключение",
@@ -384,15 +422,20 @@
       "containerId": "97b800c8dbb64bc0",
       "originalText": "Рабочее место врача · одно окно\nсписок, карточка, чек-лист, заключение",
       "lineHeight": 1.2,
-      "baseline": 28.599999999999998
+      "baseline": 28.599999999999998,
+      "index": "aA",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "40fecdad4d334f3d",
       "type": "rectangle",
-      "x": 740.0,
-      "y": 340.0,
-      "width": 270.0,
-      "height": 90.0,
+      "x": 740,
+      "y": 340,
+      "width": 270,
+      "height": 90,
       "angle": 0,
       "strokeColor": "#f57f17",
       "backgroundColor": "#ffffff",
@@ -407,8 +450,8 @@
         "type": 3
       },
       "seed": 43173060,
-      "version": 1,
-      "versionNonce": 495951637,
+      "version": 2,
+      "versionNonce": 472467165,
       "isDeleted": false,
       "boundElements": [
         {
@@ -416,15 +459,17 @@
           "type": "text"
         }
       ],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
-      "locked": false
+      "locked": false,
+      "index": "aB",
+      "created": null
     },
     {
       "id": "8b029621c7e245a4",
       "type": "text",
-      "x": 752.0,
-      "y": 352.0,
+      "x": 752,
+      "y": 352,
       "width": 288.59999999999997,
       "height": 31.2,
       "angle": 0,
@@ -439,11 +484,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 1898349370,
-      "version": 1,
-      "versionNonce": 1991381474,
+      "version": 2,
+      "versionNonce": 186179955,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "text": "Care Management\nэскалация просрочек, задачи медсестре",
@@ -454,15 +499,20 @@
       "containerId": "40fecdad4d334f3d",
       "originalText": "Care Management\nэскалация просрочек, задачи медсестре",
       "lineHeight": 1.2,
-      "baseline": 28.599999999999998
+      "baseline": 28.599999999999998,
+      "index": "aC",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "9d2cd263168b4823",
       "type": "rectangle",
-      "x": 450.0,
-      "y": 440.0,
-      "width": 270.0,
-      "height": 90.0,
+      "x": 450,
+      "y": 440,
+      "width": 270,
+      "height": 90,
       "angle": 0,
       "strokeColor": "#f57f17",
       "backgroundColor": "#ffffff",
@@ -477,8 +527,8 @@
         "type": 3
       },
       "seed": 1898860172,
-      "version": 1,
-      "versionNonce": 762797327,
+      "version": 2,
+      "versionNonce": 2021024573,
       "isDeleted": false,
       "boundElements": [
         {
@@ -486,15 +536,17 @@
           "type": "text"
         }
       ],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
-      "locked": false
+      "locked": false,
+      "index": "aD",
+      "created": null
     },
     {
       "id": "584fe79846e14d07",
       "type": "text",
-      "x": 462.0,
-      "y": 452.0,
+      "x": 462,
+      "y": 452,
       "width": 187.2,
       "height": 31.2,
       "angle": 0,
@@ -509,11 +561,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 501934229,
-      "version": 1,
-      "versionNonce": 934053265,
+      "version": 2,
+      "versionNonce": 990001939,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "text": "Коммуникации с пациентом\nСМС/push/Госуслуги",
@@ -524,15 +576,20 @@
       "containerId": "9d2cd263168b4823",
       "originalText": "Коммуникации с пациентом\nСМС/push/Госуслуги",
       "lineHeight": 1.2,
-      "baseline": 28.599999999999998
+      "baseline": 28.599999999999998,
+      "index": "aE",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "e6c5d8db99aa40e9",
       "type": "rectangle",
-      "x": 740.0,
-      "y": 440.0,
-      "width": 270.0,
-      "height": 90.0,
+      "x": 740,
+      "y": 440,
+      "width": 270,
+      "height": 90,
       "angle": 0,
       "strokeColor": "#f57f17",
       "backgroundColor": "#ffffff",
@@ -547,8 +604,8 @@
         "type": 3
       },
       "seed": 1066129649,
-      "version": 1,
-      "versionNonce": 1977753375,
+      "version": 2,
+      "versionNonce": 429978525,
       "isDeleted": false,
       "boundElements": [
         {
@@ -556,15 +613,17 @@
           "type": "text"
         }
       ],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
-      "locked": false
+      "locked": false,
+      "index": "aF",
+      "created": null
     },
     {
       "id": "d798c14c83914aa6",
       "type": "text",
-      "x": 752.0,
-      "y": 452.0,
+      "x": 752,
+      "y": 452,
       "width": 210.6,
       "height": 31.2,
       "angle": 0,
@@ -579,11 +638,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 1060176252,
-      "version": 1,
-      "versionNonce": 1948647110,
+      "version": 2,
+      "versionNonce": 63922355,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "text": "Интеграции (FHIR/СМЭВ)\nадаптеры к внешним системам",
@@ -594,15 +653,20 @@
       "containerId": "e6c5d8db99aa40e9",
       "originalText": "Интеграции (FHIR/СМЭВ)\nадаптеры к внешним системам",
       "lineHeight": 1.2,
-      "baseline": 28.599999999999998
+      "baseline": 28.599999999999998,
+      "index": "aG",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "3d150e8e245b4ab9",
       "type": "rectangle",
-      "x": 450.0,
-      "y": 540.0,
-      "width": 270.0,
-      "height": 90.0,
+      "x": 450,
+      "y": 540,
+      "width": 270,
+      "height": 90,
       "angle": 0,
       "strokeColor": "#f57f17",
       "backgroundColor": "#ffffff",
@@ -617,8 +681,8 @@
         "type": 3
       },
       "seed": 2086410778,
-      "version": 1,
-      "versionNonce": 2086855539,
+      "version": 2,
+      "versionNonce": 1809479677,
       "isDeleted": false,
       "boundElements": [
         {
@@ -626,15 +690,17 @@
           "type": "text"
         }
       ],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
-      "locked": false
+      "locked": false,
+      "index": "aH",
+      "created": null
     },
     {
       "id": "0ef2f4473a8f4ed5",
       "type": "text",
-      "x": 462.0,
-      "y": 552.0,
+      "x": 462,
+      "y": 552,
       "width": 202.79999999999998,
       "height": 31.2,
       "angle": 0,
@@ -649,11 +715,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 1783121111,
-      "version": 1,
-      "versionNonce": 712702371,
+      "version": 2,
+      "versionNonce": 791073363,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "text": "Аналитика · DataLens\nохват, приверженность, УВО",
@@ -664,15 +730,20 @@
       "containerId": "3d150e8e245b4ab9",
       "originalText": "Аналитика · DataLens\nохват, приверженность, УВО",
       "lineHeight": 1.2,
-      "baseline": 28.599999999999998
+      "baseline": 28.599999999999998,
+      "index": "aI",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "78e60e6168a74567",
       "type": "rectangle",
-      "x": 740.0,
-      "y": 540.0,
-      "width": 270.0,
-      "height": 90.0,
+      "x": 740,
+      "y": 540,
+      "width": 270,
+      "height": 90,
       "angle": 0,
       "strokeColor": "#f57f17",
       "backgroundColor": "#ffffff",
@@ -687,8 +758,8 @@
         "type": 3
       },
       "seed": 322280105,
-      "version": 1,
-      "versionNonce": 1426486538,
+      "version": 2,
+      "versionNonce": 1495560285,
       "isDeleted": false,
       "boundElements": [
         {
@@ -696,15 +767,17 @@
           "type": "text"
         }
       ],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
-      "locked": false
+      "locked": false,
+      "index": "aJ",
+      "created": null
     },
     {
       "id": "85d88aa69f224d13",
       "type": "text",
-      "x": 752.0,
-      "y": 552.0,
+      "x": 752,
+      "y": 552,
       "width": 202.79999999999998,
       "height": 31.2,
       "angle": 0,
@@ -719,11 +792,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 2131337285,
-      "version": 1,
-      "versionNonce": 1586821493,
+      "version": 2,
+      "versionNonce": 232722419,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "text": "AI-фасад\nGPT, SpeechKit, Vision OCR",
@@ -734,7 +807,12 @@
       "containerId": "78e60e6168a74567",
       "originalText": "AI-фасад\nGPT, SpeechKit, Vision OCR",
       "lineHeight": 1.2,
-      "baseline": 28.599999999999998
+      "baseline": 28.599999999999998,
+      "index": "aK",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "b5523ca7314b49bb",
@@ -757,8 +835,8 @@
         "type": 3
       },
       "seed": 1295618547,
-      "version": 1,
-      "versionNonce": 1592208455,
+      "version": 2,
+      "versionNonce": 256924861,
       "isDeleted": false,
       "boundElements": [
         {
@@ -766,9 +844,11 @@
           "type": "text"
         }
       ],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
-      "locked": false
+      "locked": false,
+      "index": "aL",
+      "created": null
     },
     {
       "id": "795d02fb856145bd",
@@ -789,11 +869,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 1105058876,
-      "version": 1,
-      "versionNonce": 751836859,
+      "version": 2,
+      "versionNonce": 301898131,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "text": "Врач-инфекционист\n(рабочее место в ГИС ЭЗ РТ)",
@@ -804,7 +884,12 @@
       "containerId": "b5523ca7314b49bb",
       "originalText": "Врач-инфекционист\n(рабочее место в ГИС ЭЗ РТ)",
       "lineHeight": 1.2,
-      "baseline": 39.599999999999994
+      "baseline": 39.599999999999994,
+      "index": "aM",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "03cadd8d5e5c438a",
@@ -827,8 +912,8 @@
         "type": 3
       },
       "seed": 1925644822,
-      "version": 1,
-      "versionNonce": 700160654,
+      "version": 2,
+      "versionNonce": 100646173,
       "isDeleted": false,
       "boundElements": [
         {
@@ -836,9 +921,11 @@
           "type": "text"
         }
       ],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
-      "locked": false
+      "locked": false,
+      "index": "aN",
+      "created": null
     },
     {
       "id": "96c7cfe8c0984de3",
@@ -859,11 +946,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 1020275668,
-      "version": 1,
-      "versionNonce": 1050139225,
+      "version": 2,
+      "versionNonce": 683405107,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "text": "Пациент\n(СМС / push / Госуслуги)",
@@ -874,7 +961,12 @@
       "containerId": "03cadd8d5e5c438a",
       "originalText": "Пациент\n(СМС / push / Госуслуги)",
       "lineHeight": 1.2,
-      "baseline": 39.599999999999994
+      "baseline": 39.599999999999994,
+      "index": "aO",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "beb6ac6eb12a4f8d",
@@ -897,8 +989,8 @@
         "type": 3
       },
       "seed": 499316716,
-      "version": 1,
-      "versionNonce": 903973167,
+      "version": 2,
+      "versionNonce": 1151603069,
       "isDeleted": false,
       "boundElements": [
         {
@@ -906,9 +998,11 @@
           "type": "text"
         }
       ],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
-      "locked": false
+      "locked": false,
+      "index": "aP",
+      "created": null
     },
     {
       "id": "b00e10b7fcca490c",
@@ -929,11 +1023,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 2065563469,
-      "version": 1,
-      "versionNonce": 1525581206,
+      "version": 2,
+      "versionNonce": 1417515219,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "text": "Минздрав РТ · Главврачи МО\n(BI-дашборды, отчётность)",
@@ -944,7 +1038,12 @@
       "containerId": "beb6ac6eb12a4f8d",
       "originalText": "Минздрав РТ · Главврачи МО\n(BI-дашборды, отчётность)",
       "lineHeight": 1.2,
-      "baseline": 39.599999999999994
+      "baseline": 39.599999999999994,
+      "index": "aQ",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "e60db8d0d73f417b",
@@ -967,8 +1066,8 @@
         "type": 3
       },
       "seed": 931603852,
-      "version": 1,
-      "versionNonce": 1805053421,
+      "version": 2,
+      "versionNonce": 1753143773,
       "isDeleted": false,
       "boundElements": [
         {
@@ -976,9 +1075,11 @@
           "type": "text"
         }
       ],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
-      "locked": false
+      "locked": false,
+      "index": "aR",
+      "created": null
     },
     {
       "id": "627e26290f594a36",
@@ -999,11 +1100,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 1563198762,
-      "version": 1,
-      "versionNonce": 105451784,
+      "version": 2,
+      "versionNonce": 114949747,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "text": "ГИС ЭЗ РТ\n(основная МИС региона)",
@@ -1014,7 +1115,12 @@
       "containerId": "e60db8d0d73f417b",
       "originalText": "ГИС ЭЗ РТ\n(основная МИС региона)",
       "lineHeight": 1.2,
-      "baseline": 39.599999999999994
+      "baseline": 39.599999999999994,
+      "index": "aS",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "1dd322f3e71b47f8",
@@ -1037,8 +1143,8 @@
         "type": 3
       },
       "seed": 225693179,
-      "version": 1,
-      "versionNonce": 1194753119,
+      "version": 2,
+      "versionNonce": 1788974653,
       "isDeleted": false,
       "boundElements": [
         {
@@ -1046,9 +1152,11 @@
           "type": "text"
         }
       ],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
-      "locked": false
+      "locked": false,
+      "index": "aT",
+      "created": null
     },
     {
       "id": "6444cfdd6b394153",
@@ -1069,11 +1177,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 48646140,
-      "version": 1,
-      "versionNonce": 1037465146,
+      "version": 2,
+      "versionNonce": 983021587,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "text": "ЕГИСЗ · ФРВГ\n(федеральные регистры)",
@@ -1084,7 +1192,12 @@
       "containerId": "1dd322f3e71b47f8",
       "originalText": "ЕГИСЗ · ФРВГ\n(федеральные регистры)",
       "lineHeight": 1.2,
-      "baseline": 39.599999999999994
+      "baseline": 39.599999999999994,
+      "index": "aU",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "1193ccb6afc645b8",
@@ -1107,8 +1220,8 @@
         "type": 3
       },
       "seed": 2084676916,
-      "version": 1,
-      "versionNonce": 1031350771,
+      "version": 2,
+      "versionNonce": 636339869,
       "isDeleted": false,
       "boundElements": [
         {
@@ -1116,9 +1229,11 @@
           "type": "text"
         }
       ],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
-      "locked": false
+      "locked": false,
+      "index": "aV",
+      "created": null
     },
     {
       "id": "7cf40de4ac6a4945",
@@ -1139,11 +1254,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 309416114,
-      "version": 1,
-      "versionNonce": 1175463757,
+      "version": 2,
+      "versionNonce": 1303199155,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "text": "ЛИС · Центры эластометрии\n(результаты анализов, УЗИ)",
@@ -1154,13 +1269,18 @@
       "containerId": "1193ccb6afc645b8",
       "originalText": "ЛИС · Центры эластометрии\n(результаты анализов, УЗИ)",
       "lineHeight": 1.2,
-      "baseline": 39.599999999999994
+      "baseline": 39.599999999999994,
+      "index": "aW",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "181da8b8c1a94724",
       "type": "rectangle",
-      "x": 420,
-      "y": 720,
+      "x": 418,
+      "y": 727,
       "width": 620,
       "height": 90,
       "angle": 0,
@@ -1177,8 +1297,8 @@
         "type": 3
       },
       "seed": 1600782843,
-      "version": 1,
-      "versionNonce": 972661658,
+      "version": 55,
+      "versionNonce": 1075441587,
       "isDeleted": false,
       "boundElements": [
         {
@@ -1186,15 +1306,17 @@
           "type": "text"
         }
       ],
-      "updated": 1,
+      "updated": 1792340538643,
       "link": null,
-      "locked": false
+      "locked": false,
+      "index": "aX",
+      "created": null
     },
     {
       "id": "a4e40ac155d0440e",
       "type": "text",
-      "x": 432,
-      "y": 732,
+      "x": 430,
+      "y": 739,
       "width": 352.8,
       "height": 50.400000000000006,
       "angle": 0,
@@ -1209,11 +1331,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 1940662866,
-      "version": 1,
-      "versionNonce": 434714655,
+      "version": 55,
+      "versionNonce": 1095205203,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340538643,
       "link": null,
       "locked": false,
       "text": "Yandex Cloud / on-premise инфраструктура\nPostgreSQL · Kafka · S3 · ClickHouse · K8s\nYandexGPT · SpeechKit · Vision · DataLens",
@@ -1224,7 +1346,12 @@
       "containerId": "181da8b8c1a94724",
       "originalText": "Yandex Cloud / on-premise инфраструктура\nPostgreSQL · Kafka · S3 · ClickHouse · K8s\nYandexGPT · SpeechKit · Vision · DataLens",
       "lineHeight": 1.2,
-      "baseline": 47.60000000000001
+      "baseline": 47.60000000000001,
+      "index": "aY",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "b99e4250ac354846",
@@ -1247,11 +1374,11 @@
         "type": 2
       },
       "seed": 941920193,
-      "version": 1,
-      "versionNonce": 1463920006,
+      "version": 2,
+      "versionNonce": 9995101,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "points": [
@@ -1268,13 +1395,15 @@
       "startBinding": null,
       "endBinding": null,
       "startArrowhead": "arrow",
-      "endArrowhead": "arrow"
+      "endArrowhead": "arrow",
+      "index": "aZ",
+      "created": null
     },
     {
       "id": "c370ecca5f7a4497",
       "type": "text",
-      "x": 383.0,
-      "y": 205.0,
+      "x": 303,
+      "y": 153,
       "width": 92.39999999999999,
       "height": 16.8,
       "angle": 0,
@@ -1289,11 +1418,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 1705232246,
-      "version": 1,
-      "versionNonce": 1781420586,
+      "version": 124,
+      "versionNonce": 1769164669,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340506442,
       "link": null,
       "locked": false,
       "text": "HTTP / REST",
@@ -1304,7 +1433,12 @@
       "containerId": null,
       "originalText": "HTTP / REST",
       "lineHeight": 1.2,
-      "baseline": 14.0
+      "baseline": 14,
+      "index": "aa",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "db5fb23c8628429e",
@@ -1327,11 +1461,11 @@
         "type": 2
       },
       "seed": 507201662,
-      "version": 1,
-      "versionNonce": 1534520723,
+      "version": 2,
+      "versionNonce": 1959399357,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "points": [
@@ -1348,13 +1482,15 @@
       "startBinding": null,
       "endBinding": null,
       "startArrowhead": null,
-      "endArrowhead": "arrow"
+      "endArrowhead": "arrow",
+      "index": "ab",
+      "created": null
     },
     {
       "id": "af874a371196443f",
       "type": "text",
-      "x": 1073.0,
-      "y": 220.0,
+      "x": 1065,
+      "y": 174,
       "width": 92.39999999999999,
       "height": 16.8,
       "angle": 0,
@@ -1369,11 +1505,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 34465179,
-      "version": 1,
-      "versionNonce": 806207526,
+      "version": 34,
+      "versionNonce": 1717269085,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340497553,
       "link": null,
       "locked": false,
       "text": "напоминания",
@@ -1384,7 +1520,12 @@
       "containerId": null,
       "originalText": "напоминания",
       "lineHeight": 1.2,
-      "baseline": 14.0
+      "baseline": 14,
+      "index": "ac",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "dec1dc93493240a0",
@@ -1407,11 +1548,11 @@
         "type": 2
       },
       "seed": 1195201533,
-      "version": 1,
-      "versionNonce": 702691423,
+      "version": 2,
+      "versionNonce": 399183901,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "points": [
@@ -1428,13 +1569,15 @@
       "startBinding": null,
       "endBinding": null,
       "startArrowhead": null,
-      "endArrowhead": "arrow"
+      "endArrowhead": "arrow",
+      "index": "ad",
+      "created": null
     },
     {
       "id": "b6939295ce9747d8",
       "type": "text",
-      "x": 1063.0,
-      "y": 500.0,
+      "x": 1071,
+      "y": 470,
       "width": 142.79999999999998,
       "height": 16.8,
       "angle": 0,
@@ -1449,11 +1592,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 1052235861,
-      "version": 1,
-      "versionNonce": 2127013880,
+      "version": 41,
+      "versionNonce": 257413469,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340501094,
       "link": null,
       "locked": false,
       "text": "отчёты / дашборды",
@@ -1464,7 +1607,12 @@
       "containerId": null,
       "originalText": "отчёты / дашборды",
       "lineHeight": 1.2,
-      "baseline": 14.0
+      "baseline": 14,
+      "index": "ae",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "3adbecf1591c479d",
@@ -1487,11 +1635,11 @@
         "type": 2
       },
       "seed": 1032761452,
-      "version": 1,
-      "versionNonce": 456150058,
+      "version": 2,
+      "versionNonce": 1200424061,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "points": [
@@ -1508,13 +1656,15 @@
       "startBinding": null,
       "endBinding": null,
       "startArrowhead": "arrow",
-      "endArrowhead": "arrow"
+      "endArrowhead": "arrow",
+      "index": "af",
+      "created": null
     },
     {
       "id": "8b3df84ba002420d",
       "type": "text",
-      "x": 393.0,
-      "y": 325.0,
+      "x": 271,
+      "y": 275,
       "width": 151.2,
       "height": 33.6,
       "angle": 0,
@@ -1529,11 +1679,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 682254313,
-      "version": 1,
-      "versionNonce": 736173500,
+      "version": 80,
+      "versionNonce": 470412797,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340495510,
       "link": null,
       "locked": false,
       "text": "диагнозы, визиты /\nзаключения",
@@ -1544,7 +1694,12 @@
       "containerId": null,
       "originalText": "диагнозы, визиты /\nзаключения",
       "lineHeight": 1.2,
-      "baseline": 30.8
+      "baseline": 30.8,
+      "index": "ag",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "1eefdf99c663485c",
@@ -1567,11 +1722,11 @@
         "type": 2
       },
       "seed": 1705435890,
-      "version": 1,
-      "versionNonce": 1175157864,
+      "version": 2,
+      "versionNonce": 668036317,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "points": [
@@ -1588,13 +1743,15 @@
       "startBinding": null,
       "endBinding": null,
       "startArrowhead": "arrow",
-      "endArrowhead": "arrow"
+      "endArrowhead": "arrow",
+      "index": "ah",
+      "created": null
     },
     {
       "id": "47a4747449f04fe8",
       "type": "text",
-      "x": 393.0,
-      "y": 412.5,
+      "x": 254,
+      "y": 409.5,
       "width": 117.6,
       "height": 16.8,
       "angle": 0,
@@ -1609,11 +1766,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 483543246,
-      "version": 1,
-      "versionNonce": 1950959854,
+      "version": 130,
+      "versionNonce": 379062269,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340494433,
       "link": null,
       "locked": false,
       "text": "ETL/API (СМЭВ)",
@@ -1624,7 +1781,12 @@
       "containerId": null,
       "originalText": "ETL/API (СМЭВ)",
       "lineHeight": 1.2,
-      "baseline": 14.0
+      "baseline": 14,
+      "index": "ai",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "69bcc9b395ea413a",
@@ -1647,11 +1809,11 @@
         "type": 2
       },
       "seed": 2015796662,
-      "version": 1,
-      "versionNonce": 246161158,
+      "version": 2,
+      "versionNonce": 1747568957,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "points": [
@@ -1668,13 +1830,15 @@
       "startBinding": null,
       "endBinding": null,
       "startArrowhead": null,
-      "endArrowhead": "arrow"
+      "endArrowhead": "arrow",
+      "index": "aj",
+      "created": null
     },
     {
       "id": "5ff27bc33597423f",
       "type": "text",
-      "x": 393.0,
-      "y": 497.5,
+      "x": 209,
+      "y": 508.5,
       "width": 176.4,
       "height": 16.8,
       "angle": 0,
@@ -1689,11 +1853,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 401802142,
-      "version": 1,
-      "versionNonce": 2036042502,
+      "version": 150,
+      "versionNonce": 983782429,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340493238,
       "link": null,
       "locked": false,
       "text": "результаты (HL7/FHIR)",
@@ -1704,14 +1868,19 @@
       "containerId": null,
       "originalText": "результаты (HL7/FHIR)",
       "lineHeight": 1.2,
-      "baseline": 14.0
+      "baseline": 14,
+      "index": "ak",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     },
     {
       "id": "1a9f080891a94b55",
       "type": "arrow",
-      "x": 730.0,
+      "x": 730,
       "y": 680,
-      "width": 0.0,
+      "width": 0,
       "height": 40,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -1727,11 +1896,11 @@
         "type": 2
       },
       "seed": 2124555191,
-      "version": 1,
-      "versionNonce": 1582401909,
+      "version": 2,
+      "versionNonce": 1240963485,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1,
+      "updated": 1792340481147,
       "link": null,
       "locked": false,
       "points": [
@@ -1740,7 +1909,7 @@
           0
         ],
         [
-          0.0,
+          0,
           40
         ]
       ],
@@ -1748,13 +1917,15 @@
       "startBinding": null,
       "endBinding": null,
       "startArrowhead": "arrow",
-      "endArrowhead": "arrow"
+      "endArrowhead": "arrow",
+      "index": "al",
+      "created": null
     },
     {
       "id": "a450649d657a4840",
       "type": "text",
-      "x": 738.0,
-      "y": 680.0,
+      "x": 762,
+      "y": 688,
       "width": 159.6,
       "height": 16.8,
       "angle": 0,
@@ -1769,11 +1940,11 @@
       "frameId": null,
       "roundness": null,
       "seed": 1689979655,
-      "version": 1,
-      "versionNonce": 1298536517,
+      "version": 26,
+      "versionNonce": 725213,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
+      "boundElements": [],
+      "updated": 1792340512476,
       "link": null,
       "locked": false,
       "text": "инференс / хранение",
@@ -1784,12 +1955,20 @@
       "containerId": null,
       "originalText": "инференс / хранение",
       "lineHeight": 1.2,
-      "baseline": 14.0
+      "baseline": 14,
+      "index": "am",
+      "created": null,
+      "autoResize": true,
+      "labelPosition": null,
+      "baseFontSize": null
     }
   ],
   "appState": {
-    "gridSize": null,
-    "viewBackgroundColor": "#ffffff"
+    "gridSize": 20,
+    "gridStep": 5,
+    "gridModeEnabled": false,
+    "viewBackgroundColor": "#ffffff",
+    "lockedMultiSelections": {}
   },
   "files": {}
 }
