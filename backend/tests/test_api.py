@@ -89,6 +89,59 @@ def test_complete_plan_item_and_encounter_flow(client, doctor):
     assert any(i["kind"] == "VISIT" and i["status"] == "PLANNED" for i in detail["plan"])  # следующий визит +6 мес
 
 
+def test_repeated_same_day_encounter_is_rejected_without_adding_another_plan_cycle(client, doctor):
+    body = dict(PATIENT, full_name="Повторный Приём Пациент", snils="99988877731",
+                oms="1600000000999931")
+    patient = client.post("/api/patients", json=body, headers=doctor).json()
+    endpoint = f"/api/patients/{patient['id']}/encounters"
+
+    first = client.post(endpoint, json={"complaints": "Контрольный визит"}, headers=doctor)
+    assert first.status_code == 201
+    after_first = client.get(f"/api/patients/{patient['id']}", headers=doctor).json()
+    plan_count = len(after_first["plan"])
+    assert len(after_first["encounters"]) == 1
+    assert any(item["kind"] == "VISIT" and item["status"] == "PLANNED"
+               and item["due_date"] > date.today().isoformat() for item in after_first["plan"])
+
+    repeated = client.post(endpoint, json={"complaints": "Повторный клик"}, headers=doctor)
+    assert repeated.status_code == 409
+    assert "уже сохранена" in repeated.json()["detail"]
+    after_repeat = client.get(f"/api/patients/{patient['id']}", headers=doctor).json()
+    assert len(after_repeat["encounters"]) == 1
+    assert len(after_repeat["plan"]) == plan_count
+
+
+def test_encounter_does_not_complete_a_visit_scheduled_far_in_the_future(client, doctor):
+    body = dict(PATIENT, full_name="Будущий Визит Пациент", snils="99988877732",
+                oms="1600000000999932")
+    patient = client.post("/api/patients", json=body, headers=doctor).json()
+    db = SessionLocal()
+    try:
+        initial_visit = db.query(PlanItem).filter(
+            PlanItem.patient_id == patient["id"], PlanItem.kind == "VISIT"
+        ).one()
+        initial_visit.status = "DONE"
+        initial_visit.completed_at = date.today()
+        future_visit = PlanItem(
+            patient_id=patient["id"], kind="VISIT", title="Плановый приём через полгода",
+            due_date=date.today() + timedelta(days=180), window_days=14,
+            status="PLANNED", rule_ref="Тест будущего визита",
+        )
+        db.add(future_visit)
+        db.commit()
+        future_visit_id = future_visit.id
+    finally:
+        db.close()
+
+    response = client.post(f"/api/patients/{patient['id']}/encounters", json={}, headers=doctor)
+    assert response.status_code == 201
+    after = client.get(f"/api/patients/{patient['id']}", headers=doctor).json()
+    kept_visit = next(item for item in after["plan"] if item["id"] == future_visit_id)
+    assert kept_visit["status"] == "PLANNED"
+    assert sum(item["kind"] == "VISIT" and item["status"] == "PLANNED"
+               for item in after["plan"]) == 1
+
+
 def test_whitespace_encounter_text_is_stored_as_empty_unsigned_draft(client, doctor):
     body = dict(PATIENT, full_name="Пробелы В Заключении", snils="99988877721",
                 oms="1600000000999921")

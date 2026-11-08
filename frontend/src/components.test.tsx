@@ -28,7 +28,7 @@ describe("PatientRow", () => {
     const onOpen = vi.fn();
     render(<table><tbody><PatientRow patient={patient} onOpen={onOpen} /></tbody></table>);
     expect(screen.getByText("Иванов Иван Иванович")).toBeInTheDocument();
-    expect(screen.getByText(/просрочено: 2/)).toBeInTheDocument();
+    expect(screen.getByText(/2 просрочено/)).toBeInTheDocument();
     fireEvent.click(screen.getByTestId("patient-row"));
     expect(onOpen).toHaveBeenCalledWith(patient);
   });

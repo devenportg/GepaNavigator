@@ -320,21 +320,38 @@ def create_encounter(patient_id: int, body: EncounterIn, db: Session = Depends(g
     if p.status in ("DISCHARGED", "DECEASED"):
         raise HTTPException(409, "Нельзя создавать приём для снятого с наблюдения пациента")
     today = date.today()
+
+    # One encounter per patient per day prevents double-clicks/retries from
+    # advancing the monitoring plan more than once.
+    existing_today = (db.query(Encounter).filter(
+        Encounter.patient_id == p.id, Encounter.visit_date == today
+    ).first())
+    if existing_today:
+        raise HTTPException(409, "Для пациента уже сохранена запись о приёме сегодня")
+
     if body.complete_visit_item:
-        visit = (db.query(PlanItem).filter(PlanItem.patient_id == p.id, PlanItem.kind == "VISIT",
-                                          PlanItem.status.in_(["PLANNED", "OVERDUE"]))
-                 .order_by(PlanItem.due_date).first())
+        visits = (db.query(PlanItem).filter(
+            PlanItem.patient_id == p.id,
+            PlanItem.kind == "VISIT",
+            PlanItem.status.in_(["PLANNED", "OVERDUE"]),
+        ).order_by(PlanItem.due_date).all())
+        # Never close a visit scheduled far in the future just because an encounter
+        # was recorded today. The visit may be closed only within its grace window.
+        visit = next((item for item in visits
+                      if item.due_date <= today + timedelta(days=item.window_days)), None)
         if visit:
             visit.status = "DONE"
             visit.completed_at = today
+
     next_step = "явка на плановый приём через 6 месяцев, лабораторный контроль по плану наблюдения."
     draft = rules.draft_conclusion(p.full_name, p.nosology, p.diagnosis_code, body.complaints, next_step)
     # E-signature is not implemented: entered text remains an unsigned draft in this MVP.
     enc = Encounter(patient_id=p.id, doctor_id=user.id, visit_date=today, complaints=body.complaints,
                     conclusion=body.conclusion, draft_conclusion=draft, signed=False)
     db.add(enc)
-    db.flush()  # sessionmaker(autoflush=False): статус визита должен попасть в запрос ниже
-    # Следующий цикл наблюдения по КР
+    db.flush()  # sessionmaker(autoflush=False): encounter is visible to the query below
+
+    # Plan the next follow-up cycle only when another future visit is not already present.
     existing_next = (db.query(PlanItem).filter(PlanItem.patient_id == p.id, PlanItem.kind == "VISIT",
                                                PlanItem.status == "PLANNED",
                                                PlanItem.due_date > today).first())
