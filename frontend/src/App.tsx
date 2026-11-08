@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { api, getToken, post, setToken } from "./api";
 import { PatientRow, StatCard, ZoneBadge } from "./components";
 import type { Analytics, CareTask, Patient, PlanItem, User, Zone } from "./types";
@@ -177,7 +178,7 @@ function Modal({ title, description, onClose, children, size = "medium", busy = 
     if (!busyRef.current) onCloseRef.current();
   }
 
-  return (
+  return createPortal(
     <div className="modal-layer" onMouseDown={(event) => { if (event.target === event.currentTarget) requestClose(); }}>
       <section ref={dialogRef} className={`modal-panel modal-${size}`} role="dialog" aria-modal="true"
         aria-labelledby={titleId} aria-describedby={description ? descriptionId : undefined} aria-busy={busy} tabIndex={-1}>
@@ -194,7 +195,8 @@ function Modal({ title, description, onClose, children, size = "medium", busy = 
         </header>
         {children}
       </section>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

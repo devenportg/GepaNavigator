@@ -166,6 +166,7 @@ describe("role-based navigation", () => {
     fireEvent.click(openDialogButton);
 
     const resultDialog = await screen.findByRole("dialog", { name: "Отметить событие выполненным" });
+    expect(resultDialog.closest(".modal-layer")?.parentElement).toBe(document.body);
     const resultField = screen.getByRole("textbox", { name: /Результат или комментарий/ });
     await waitFor(() => expect(document.activeElement).toBe(resultField));
 

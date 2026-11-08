@@ -113,28 +113,28 @@ a { color: inherit; }
 .toolbar-count { padding-left: 10px; color: #89999c; font-size: 11px; white-space: nowrap; }
 .table-card { overflow: hidden; margin: 0 0 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
 .table-card-heading { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 17px 20px; border-bottom: 1px solid #edf2f2; }
-.table-card-heading h2 { margin: 0; color: var(--navy); font-family: Manrope, 'Segoe UI', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: -.02em; }
-.table-card-heading p { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+.table-card-heading h2 { margin: 0; color: var(--navy); font-family: Manrope, 'Segoe UI', sans-serif; font-size: 16px; font-weight: 800; letter-spacing: -.02em; }
+.table-card-heading p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
 .table-scroll { width: 100%; overflow-x: auto; }
 .data-table { width: 100%; border-collapse: collapse; text-align: left; }
-.data-table th { height: 44px; padding: 0 17px; color: #849599; background: #f8fbfa; border-bottom: 1px solid var(--line); font-size: 9px; font-weight: 800; letter-spacing: .075em; text-transform: uppercase; white-space: nowrap; }
-.data-table td { padding: 13px 17px; border-bottom: 1px solid #eff3f3; color: #435960; font-size: 11px; line-height: 1.5; vertical-align: middle; }
+.data-table th { height: 46px; padding: 0 17px; color: #71868b; background: #f8fbfa; border-bottom: 1px solid var(--line); font-size: 11px; font-weight: 800; letter-spacing: .055em; text-transform: uppercase; white-space: nowrap; }
+.data-table td { padding: 15px 17px; border-bottom: 1px solid #eff3f3; color: #435960; font-size: 14px; line-height: 1.5; vertical-align: middle; }
 .data-table tbody tr:last-child td { border-bottom: 0; }
 .data-table tbody tr:hover { background: #fbfdfd; }
 .data-table b { color: #29454d; font-weight: 700; }
-.table-subline { display: block; margin-top: 3px; color: #849599; font-size: 10px; }
-.rule-note { display: block; max-width: 330px; margin-top: 4px; color: #91a0a3; font-size: 9px; line-height: 1.45; }
+.table-subline { display: block; margin-top: 4px; color: #71868b; font-size: 12px; }
+.rule-note { display: block; max-width: 330px; margin-top: 5px; color: #778b8f; font-size: 11px; line-height: 1.5; }
 .date-cell { color: #496169; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .patient-row { cursor: pointer; transition: background .14s ease; }
 .patient-row:hover { background: #f7fbfa !important; }
 .patient-row:focus-visible { position: relative; outline-offset: -3px; }
-.patient-name-button, .text-link { padding: 0; border: 0; color: var(--teal-dark); background: transparent; cursor: pointer; font-size: 12px; font-weight: 800; text-align: left; }
+.patient-name-button, .text-link { padding: 0; border: 0; color: var(--teal-dark); background: transparent; cursor: pointer; font-size: 14px; font-weight: 800; text-align: left; }
 .patient-name-button:hover, .text-link:hover { color: #064e52; text-decoration: underline; }
-.p-sub { margin-top: 3px; color: #839499; font-size: 10px; }
-.overdue-count { display: inline-flex; margin-left: 8px; padding: 3px 7px; border-radius: 999px; color: #a84c52; background: #fbefef; font-size: 9px; font-weight: 700; white-space: nowrap; }
+.p-sub { margin-top: 4px; color: #71868b; font-size: 12px; }
+.overdue-count { display: inline-flex; margin-left: 8px; padding: 4px 8px; border-radius: 999px; color: #a84c52; background: #fbefef; font-size: 11px; font-weight: 700; white-space: nowrap; }
 
 /* Semantic status badges */
-.status-pill, .plan-status, .priority-pill { display: inline-flex; align-items: center; gap: 6px; width: fit-content; padding: 5px 9px; border-radius: 999px; font-size: 9px; font-weight: 800; line-height: 1.15; white-space: nowrap; }
+.status-pill, .plan-status, .priority-pill { display: inline-flex; align-items: center; gap: 6px; width: fit-content; padding: 6px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; line-height: 1.2; white-space: nowrap; }
 .status-active, .plan-done { color: #34745e; background: #eaf5ef; }
 .status-on_therapy { color: #286f79; background: #e8f4f5; }
 .status-post_therapy { color: #65538f; background: #f0edf7; }
@@ -147,9 +147,9 @@ a { color: inherit; }
 .notification-sent { color: #3c6d82; background: #edf5f8; }
 .notification-skipped_no_consent, .notification-cancelled_no_consent,
 .notification-cancelled_superseded, .notification-cancelled_patient_inactive { color: #77888c; background: #eff3f3; }
-.audit-action { display: inline-flex; padding: 4px 7px; color: #427075; background: #edf5f4; border-radius: 7px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; }
-.zone-badge { display: inline-flex; align-items: center; gap: 7px; width: fit-content; color: #536c72; font-size: 10px; font-weight: 700; white-space: nowrap; }
-.zone-dot { width: 8px; height: 8px; display: inline-block; border-radius: 50%; box-shadow: 0 0 0 3px rgba(110, 135, 137, .08); }
+.audit-action { display: inline-flex; padding: 4px 7px; color: #427075; background: #edf5f4; border-radius: 7px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+.zone-badge { display: inline-flex; align-items: center; gap: 8px; width: fit-content; color: #536c72; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.zone-dot { width: 9px; height: 9px; display: inline-block; border-radius: 50%; box-shadow: 0 0 0 3px rgba(110, 135, 137, .08); }
 .zone-red { color: #a95056; }
 .zone-yellow { color: #92701f; }
 .zone-green { color: #34745e; }
@@ -342,7 +342,7 @@ textarea { min-height: 92px; resize: vertical; line-height: 1.55; }
 .doctor-load b { margin-left: auto; color: #35545b; }
 .disclaimer-note { margin: 14px 0; color: #98a6a8; font-size: 9px; }
 .notification-text { min-width: 260px; max-width: 440px; color: #708187 !important; }
-.priority-pill { font-size: 9px; }
+.priority-pill { font-size: 11px; }
 
 /* Responsive */
 @media (max-width: 1100px) {

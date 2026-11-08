@@ -89,6 +89,38 @@ def test_complete_plan_item_and_encounter_flow(client, doctor):
     assert any(i["kind"] == "VISIT" and i["status"] == "PLANNED" for i in detail["plan"])  # следующий визит +6 мес
 
 
+def test_completed_plan_item_is_first_when_due_dates_match(client, doctor):
+    body = dict(PATIENT, full_name="Сортировка Плана Пациент", snils="99988877733",
+                oms="1600000000999933")
+    response = client.post("/api/patients", json=body, headers=doctor)
+    assert response.status_code == 201
+    patient_id = response.json()["id"]
+    shared_date = date.today() + timedelta(days=400)
+
+    db = SessionLocal()
+    try:
+        still_open = PlanItem(
+            patient_id=patient_id, kind="LABS", title="Оставшееся событие",
+            due_date=shared_date, status="PLANNED", window_days=14,
+        )
+        completed = PlanItem(
+            patient_id=patient_id, kind="PCR", title="Отмеченное событие",
+            due_date=shared_date, status="PLANNED", window_days=14,
+        )
+        db.add_all([still_open, completed])
+        db.commit()
+        still_open_id, completed_id = still_open.id, completed.id
+    finally:
+        db.close()
+
+    result = client.post(f"/api/plan-items/{completed_id}/complete",
+                         json={"result": "Выполнено"}, headers=doctor)
+    assert result.status_code == 200
+    detail = client.get(f"/api/patients/{patient_id}", headers=doctor).json()
+    same_date = [item for item in detail["plan"] if item["due_date"] == shared_date.isoformat()]
+    assert [item["id"] for item in same_date] == [completed_id, still_open_id]
+
+
 def test_repeated_same_day_encounter_is_rejected_without_adding_another_plan_cycle(client, doctor):
     body = dict(PATIENT, full_name="Повторный Приём Пациент", snils="99988877731",
                 oms="1600000000999931")

@@ -114,12 +114,18 @@ def refresh_overdue(
 
 def patient_dict(db: Session, p: Patient, today: date | None = None) -> dict:
     today = today or date.today()
-    items = db.query(PlanItem).filter(PlanItem.patient_id == p.id).order_by(PlanItem.due_date).all()
+    items = db.query(PlanItem).filter(PlanItem.patient_id == p.id).order_by(PlanItem.due_date, PlanItem.id).all()
     item_dicts = [{
         "id": i.id, "kind": i.kind, "title": i.title, "due_date": i.due_date,
         "window_days": i.window_days, "status": rules.effective_status(i.status, i.due_date, i.window_days, today),
         "rule_ref": i.rule_ref, "completed_at": i.completed_at, "result": i.result,
     } for i in items]
+    # For identical due dates, keep completed items at the top of the group so
+    # marking an event does not make it jump below still-open events.
+    status_order = {"DONE": 0, "PLANNED": 1, "OVERDUE": 2, "CANCELLED": 3}
+    item_dicts.sort(key=lambda item: (
+        item["due_date"], status_order.get(item["status"], 4), item["id"]
+    ))
     upcoming = [i for i in item_dicts if i["status"] in ("PLANNED", "OVERDUE")]
     return {
         "id": p.id, "full_name": p.full_name, "birth_date": p.birth_date, "sex": p.sex,
