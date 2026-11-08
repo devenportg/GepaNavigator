@@ -181,13 +181,16 @@ def reminder_kind_for(item_kind: str, days_before: int) -> str | None:
 
 def draft_conclusion(patient_name: str, nosology: str, diagnosis_code: str,
                      complaints: str | None, next_step: str) -> str:
-    """Mock-фасад YandexGPT: детерминированный черновик заключения (блок 3, п.4).
-
-    В проде заменяется вызовом YandexGPT API за тем же интерфейсом.
-    """
-    complaints_part = complaints.strip() if complaints and complaints.strip() else "Жалоб активно не предъявляет."
+    """Демонстрационный макет заключения; YandexGPT здесь не вызывается."""
+    complaints_part = complaints.strip() if complaints and complaints.strip() else "Не указаны."
     return (
-        f"Черновик заключения (сформирован AI-ассистентом, требует проверки врача). "
-        f"Пациент {patient_name}, диагноз {diagnosis_code} ({nosology}), диспансерное наблюдение. "
-        f"{complaints_part} Осмотр проведён, план наблюдения по КР актуален. Рекомендации: {next_step}"
+        "Черновик заключения — демонстрационный шаблон, требует проверки врача\n\n"
+        f"Пациент: {patient_name}\n"
+        f"Диагноз: {diagnosis_code} ({nosology})\n\n"
+        "Жалобы и данные осмотра\n"
+        f"{complaints_part}\n\n"
+        "План наблюдения и рекомендации\n"
+        f"{next_step}\n\n"
+        "Перед сохранением проверьте и при необходимости отредактируйте текст. "
+        "YandexGPT не подключён; текст сформирован локальным шаблоном."
     )

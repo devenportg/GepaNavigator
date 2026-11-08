@@ -3,9 +3,10 @@ import time
 from datetime import date, timedelta
 
 import jwt
+from app import main
 from app.config import settings
 from app.db import SessionLocal
-from app.models import CareTask, Notification, Patient, PlanItem, User
+from app.models import AuditLog, CareTask, Notification, Patient, PlanItem, User
 from app.security import hash_password
 from tests.conftest import login
 
@@ -80,13 +81,168 @@ def test_complete_plan_item_and_encounter_flow(client, doctor):
                     json={"result": "АЛТ 22, АСТ 19"}, headers=doctor)
     assert r.status_code == 200 and r.json()["status"] == "DONE"
 
+    draft_response = client.post(f"/api/patients/{pid}/encounters/draft",
+                                 json={"complaints": "Жалоб нет.", "instructions": "Кратко и по разделам"},
+                                 headers=doctor)
+    assert draft_response.status_code == 200
+    draft = draft_response.json()["draft_conclusion"]
     r = client.post(f"/api/patients/{pid}/encounters",
-                    json={"complaints": "Жалоб нет.", "conclusion": "Продолжить наблюдение."}, headers=doctor)
+                    json={"complaints": "Жалоб нет.", "conclusion": "Продолжить наблюдение.",
+                          "draft_conclusion": draft}, headers=doctor)
     assert r.status_code == 201
     assert r.json()["signed"] is False  # текст не считается электронной подписью
-    assert "Черновик заключения" in r.json()["draft_conclusion"]
+    assert r.json()["draft_conclusion"] == draft
     detail = client.get(f"/api/patients/{pid}", headers=doctor).json()
     assert any(i["kind"] == "VISIT" and i["status"] == "PLANNED" for i in detail["plan"])  # следующий визит +6 мес
+
+
+def test_future_plan_item_can_be_edited_with_audited_reason(client, doctor, nurse):
+    body = dict(PATIENT, full_name="Редактирование Плана Пациент", snils="99988877751",
+                oms="1600000000999951")
+    patient = client.post("/api/patients", json=body, headers=doctor).json()
+    item = next(item for item in patient["plan"] if item["kind"] == "LABS")
+    due_date = date.today() + timedelta(days=75)
+    update = {
+        "title": "Лабораторный контроль по согласованному сроку",
+        "due_date": due_date.isoformat(),
+        "window_days": 21,
+        "reason": "Срок согласован с врачом после уточнения доступности обследования",
+    }
+
+    same_day_update = {**update, "due_date": date.today().isoformat()}
+    assert client.patch(f"/api/plan-items/{item['id']}", json=same_day_update,
+                        headers=doctor).status_code == 422
+
+    changed = client.patch(f"/api/plan-items/{item['id']}", json=update, headers=doctor)
+    assert changed.status_code == 200, changed.text
+    assert changed.json()["title"] == update["title"]
+    assert changed.json()["due_date"] == update["due_date"]
+    assert changed.json()["window_days"] == 21
+
+    denied = client.patch(f"/api/plan-items/{item['id']}", json=update, headers=nurse)
+    assert denied.status_code == 403
+
+    db = SessionLocal()
+    try:
+        audit = db.query(AuditLog).filter(
+            AuditLog.action == "plan.edit", AuditLog.entity_id == item["id"]
+        ).one()
+        assert update["reason"] in audit.details
+    finally:
+        db.close()
+
+    db = SessionLocal()
+    try:
+        stored = db.get(PlanItem, item["id"])
+        stored.status = "DONE"
+        db.commit()
+    finally:
+        db.close()
+    locked = client.patch(f"/api/plan-items/{item['id']}", json=update, headers=doctor)
+    assert locked.status_code == 409
+
+    db = SessionLocal()
+    try:
+        stored = db.get(PlanItem, item["id"])
+        stored.status = "CANCELLED"
+        db.commit()
+    finally:
+        db.close()
+    cancelled = client.patch(f"/api/plan-items/{item['id']}", json=update, headers=doctor)
+    assert cancelled.status_code == 409
+
+    db = SessionLocal()
+    try:
+        stored = db.get(PlanItem, item["id"])
+        stored.status = "PLANNED"
+        stored.due_date = date.today() - timedelta(days=30)
+        db.commit()
+    finally:
+        db.close()
+    detail = client.get(f"/api/patients/{patient['id']}", headers=doctor).json()
+    assert next(event for event in detail["plan"] if event["id"] == item["id"])["status"] == "OVERDUE"
+    overdue = client.patch(f"/api/plan-items/{item['id']}", json=update, headers=doctor)
+    assert overdue.status_code == 409
+
+
+def test_encounter_draft_is_generated_before_save_and_final_text_can_differ(client, doctor):
+    body = dict(PATIENT, full_name="Черновик Заключения Пациент", snils="99988877752",
+                oms="1600000000999952")
+    patient = client.post("/api/patients", json=body, headers=doctor).json()
+    endpoint = f"/api/patients/{patient['id']}"
+    source = "Жалоб нет. Осмотр без особенностей."
+    generated = client.post(f"{endpoint}/encounters/draft",
+                            json={"complaints": source, "instructions": "Кратко и по разделам"},
+                            headers=doctor)
+    assert generated.status_code == 200
+    data = generated.json()
+    assert data["mode"] == "demo"
+    assert "YandexGPT не подключён" in data["notice"]
+    assert "инструкция" in data["notice"].casefold()
+    assert "Кратко и по разделам" not in data["draft_conclusion"]
+    assert source in data["draft_conclusion"]
+    assert patient["plan"][0]["title"] in data["draft_conclusion"]
+    assert client.get(endpoint, headers=doctor).json()["encounters"] == []
+
+    edited = data["draft_conclusion"].replace(source, "Жалоб нет. Состояние стабильное.")
+    saved = client.post(f"{endpoint}/encounters", json={
+        "complaints": source,
+        "conclusion": edited,
+        "draft_conclusion": data["draft_conclusion"],
+    }, headers=doctor)
+    assert saved.status_code == 201
+    assert saved.json()["conclusion"] == edited
+    assert saved.json()["draft_conclusion"] == data["draft_conclusion"]
+    assert saved.json()["signed"] is False
+    visit = client.get(endpoint, headers=doctor).json()["encounters"][0]
+    assert visit["draft_conclusion"] == data["draft_conclusion"]
+    assert visit["conclusion"] == edited
+
+
+def test_enabled_yandexgpt_draft_uses_only_explicit_context(client, doctor, monkeypatch):
+    monkeypatch.setattr(settings, "yandexgpt_enabled", True)
+    body = dict(PATIENT, full_name="Synthetic Yandex Demo Patient", snils="99988877753",
+                oms="1600000000999953")
+    patient = client.post("/api/patients", json=body, headers=doctor).json()
+    captured = {}
+
+    def fake_generate_conclusion(**context):
+        captured.update(context)
+        return "Синтетический черновик от YandexGPT"
+
+    monkeypatch.setattr(main.yandexgpt, "generate_conclusion", fake_generate_conclusion)
+    response = client.post(f"/api/patients/{patient['id']}/encounters/draft", json={
+        "complaints": "Синтетические данные: жалоб нет.",
+        "instructions": "Краткая структура.",
+    }, headers=doctor)
+
+    assert response.status_code == 200
+    assert response.json()["mode"] == "yandexgpt"
+    assert response.json()["draft_conclusion"] == "Синтетический черновик от YandexGPT"
+    assert "Yandex Cloud" in response.json()["notice"]
+    assert captured["complaints"] == "Синтетические данные: жалоб нет."
+    assert captured["instructions"] == "Краткая структура."
+    assert captured["diagnosis_code"] == body["diagnosis_code"]
+    assert body["full_name"] not in repr(captured)
+
+
+def test_enabled_yandexgpt_failure_does_not_fall_back_or_leak_provider_body(client, doctor, monkeypatch):
+    monkeypatch.setattr(settings, "yandexgpt_enabled", True)
+    body = dict(PATIENT, full_name="YandexGPT Ошибка Синтетический", snils="99988877754",
+                oms="1600000000999954")
+    patient = client.post("/api/patients", json=body, headers=doctor).json()
+
+    def fail_generation(**_context):
+        raise main.yandexgpt.YandexGPTError("secret response text must not escape")
+
+    monkeypatch.setattr(main.yandexgpt, "generate_conclusion", fail_generation)
+    response = client.post(f"/api/patients/{patient['id']}/encounters/draft", json={
+        "complaints": "Только синтетический текст.",
+    }, headers=doctor)
+
+    assert response.status_code == 502
+    assert "secret response text" not in response.text
+    assert "локальный демонстрационный шаблон" not in response.text
 
 
 def test_completed_plan_item_is_first_when_due_dates_match(client, doctor):

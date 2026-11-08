@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { api, getToken, post, setToken } from "./api";
+import { api, getToken, patch, post, setToken } from "./api";
 import { PatientRow, StatCard, ZoneBadge } from "./components";
 import type { Analytics, CareTask, Patient, PlanItem, User, Zone } from "./types";
 import {
@@ -47,6 +47,7 @@ type AuditItem = {
   created_at: string;
 };
 type TherapyForm = { regimen: string; therapy_start: string; therapy_end: string };
+type PlanItemEditForm = { title: string; due_date: string; window_days: string; reason: string };
 type CareOutcomeCode = "WILL_COME" | "REFUSED" | "NO_ANSWER" | "UNREACHABLE";
 type IconName = "brand" | "patients" | "phone" | "chart" | "bell" | "audit" | "refresh" | "logout" | "close" | "calendar" | "check" | "activity" | "plus" | "arrow" | "shield";
 
@@ -55,6 +56,7 @@ const canConductEncounter = (role: string) => ["doctor", "head", "admin"].includ
 const canCompletePlanItem = (role: string, kind: string) =>
   ["doctor", "head", "nurse", "admin"].includes(role) &&
   !(role === "nurse" && ["VISIT", "SVR12"].includes(kind));
+const canEditPlanItems = (role: string) => ["doctor", "head"].includes(role);
 const canRunDailyJob = (role: string) => ["head", "nurse", "admin"].includes(role);
 
 function localDateInput(value?: Date): string {
@@ -63,6 +65,12 @@ function localDateInput(value?: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function localTomorrowInput(): string {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return localDateInput(tomorrow);
 }
 
 function initials(name: string): string {
@@ -539,6 +547,7 @@ function PatientCard({ patientId, user, onClose }: { patientId: number; user: Us
   const [patient, setPatient] = useState<Patient | null>(null);
   const [complaints, setComplaints] = useState("");
   const [conclusion, setConclusion] = useState("");
+  const [draftInstructions, setDraftInstructions] = useState("");
   const [draft, setDraft] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -547,6 +556,10 @@ function PatientCard({ patientId, user, onClose }: { patientId: number; user: Us
   const [busy, setBusy] = useState(false);
   const [completionItem, setCompletionItem] = useState<PlanItem | null>(null);
   const [completionResult, setCompletionResult] = useState("");
+  const [planEditItem, setPlanEditItem] = useState<PlanItem | null>(null);
+  const [planEditForm, setPlanEditForm] = useState<PlanItemEditForm>({
+    title: "", due_date: "", window_days: "14", reason: "",
+  });
   const [therapyOpen, setTherapyOpen] = useState(false);
   const [therapyForm, setTherapyForm] = useState<TherapyForm>({ regimen: "", therapy_start: localDateInput(), therapy_end: "" });
   const canEncounter = canConductEncounter(user.role);
@@ -592,18 +605,78 @@ function PatientCard({ patientId, user, onClose }: { patientId: number; user: Us
     }
   }
 
+  function openPlanEdit(item: PlanItem) {
+    setPlanEditItem(item);
+    setPlanEditForm({
+      title: item.title,
+      due_date: item.due_date.slice(0, 10),
+      window_days: String(item.window_days),
+      reason: "",
+    });
+    setModalError("");
+  }
+
+  async function submitPlanEdit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!planEditItem) return;
+    const windowDays = Number(planEditForm.window_days);
+    if (!Number.isInteger(windowDays) || windowDays < 0 || windowDays > 90) {
+      setModalError("Допустимое окно выполнения — от 0 до 90 дней.");
+      return;
+    }
+    setBusy(true);
+    setModalError("");
+    try {
+      await patch(`/api/plan-items/${planEditItem.id}`, {
+        title: planEditForm.title.trim(),
+        due_date: planEditForm.due_date,
+        window_days: windowDays,
+        reason: planEditForm.reason.trim(),
+      });
+      setPlanEditItem(null);
+      setMessage("Изменение плана сохранено и записано в журнал аудита.");
+      await load();
+    } catch (err) {
+      setModalError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function generateConclusionDraft() {
+    if (!patient) return;
+    if (conclusion.trim() && conclusion !== draft &&
+        !window.confirm("Новый шаблон заменит текущий текст заключения. Продолжить?")) return;
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const result = await post<{ draft_conclusion: string; notice: string }>(
+        `/api/patients/${patient.id}/encounters/draft`,
+        { complaints: complaints || null, instructions: draftInstructions.trim() || null },
+      );
+      setDraft(result.draft_conclusion);
+      setConclusion(result.draft_conclusion);
+      setMessage(result.notice);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function encounter() {
     if (!patient) return;
     setBusy(true);
     setError("");
     setMessage("");
     try {
-      const result = await post<{ draft_conclusion: string }>(`/api/patients/${patient.id}/encounters`, {
+      await post<{ draft_conclusion: string | null }>(`/api/patients/${patient.id}/encounters`, {
         complaints,
-        conclusion: conclusion || null,
+        conclusion: conclusion.trim() || null,
+        draft_conclusion: draft || null,
       });
-      setDraft(result.draft_conclusion);
-      setMessage("Запись приёма сохранена. Будущие контрольные события находятся в плане пациента.");
+      setMessage("Приём сохранён как неподписанный черновик. Проверьте текст перед дальнейшим использованием.");
       await load();
     } catch (err) {
       const detail = (err as Error).message;
@@ -737,8 +810,14 @@ function PatientCard({ patientId, user, onClose }: { patientId: number; user: Us
                   {item.rule_ref && <span className="rule-note">{item.rule_ref}</span>}</td>
                 <td className="date-cell">{fmtDate(item.due_date)}</td>
                 <td><span className={`plan-status plan-${item.status.toLowerCase()}`}>{PLAN_STATUS_LABELS[item.status] ?? item.status}</span></td>
-                <td>{canCompletePlanItem(user.role, item.kind) && item.status !== "DONE" && item.status !== "CANCELLED" &&
-                  <button className="button button-small button-quiet" disabled={busy} onClick={() => openCompletion(item)}>Отметить</button>}</td>
+                <td><div className="plan-actions">
+                  {canEditPlanItems(user.role) && !["DISCHARGED", "DECEASED"].includes(patient.status) &&
+                    item.status === "PLANNED" && item.due_date > localDateInput() &&
+                    <button type="button" className="button button-small button-quiet" disabled={busy}
+                      aria-label={`Редактировать событие плана: ${item.title}`} onClick={() => openPlanEdit(item)}>Изменить</button>}
+                  {canCompletePlanItem(user.role, item.kind) && item.status !== "DONE" && item.status !== "CANCELLED" &&
+                    <button type="button" className="button button-small button-quiet" disabled={busy} onClick={() => openCompletion(item)}>Отметить</button>}
+                </div></td>
               </tr>
             ))}</tbody>
           </table></div>}
@@ -748,25 +827,62 @@ function PatientCard({ patientId, user, onClose }: { patientId: number; user: Us
           <div className="section-heading"><div><p className="eyebrow">Рабочее место врача</p><h3>Запись о приёме</h3></div><span className="unsigned-tag">Без электронной подписи</span></div>
           <p className="section-description">Сохранение приёма не завершает лечение. После записи планировщик сохранит следующий цикл наблюдения.</p>
           {encounterSavedToday && <div className="notice notice-success"><Icon name="check" /><span><b>Приём за сегодня уже сохранён.</b><small>Повторная запись отключена, чтобы не сдвигать будущий план.</small></span></div>}
-          <label className="field"><span>Жалобы и данные осмотра</span><textarea placeholder="Кратко зафиксируйте жалобы или данные осмотра…" value={complaints} onChange={(event) => setComplaints(event.target.value)} disabled={busy || encounterSavedToday} /></label>
-          <label className="field"><span>Заключение врача</span><textarea placeholder="Введите заключение. Черновик-подсказка будет сформирован отдельно и потребует проверки…" value={conclusion} onChange={(event) => setConclusion(event.target.value)} disabled={busy || encounterSavedToday} /></label>
+          <label className="field"><span>Жалобы и данные осмотра</span><textarea placeholder="Кратко зафиксируйте жалобы и факты осмотра…" value={complaints} onChange={(event) => setComplaints(event.target.value)} disabled={busy || encounterSavedToday} /></label>
+          <label className="field"><span>Инструкция для оформления (необязательно)</span><textarea rows={2} maxLength={2000}
+            placeholder="Например: оформить кратко, отдельными разделами…" value={draftInstructions}
+            onChange={(event) => setDraftInstructions(event.target.value)} disabled={busy || encounterSavedToday} /></label>
+          <p className="field-hint">YandexGPT отключён по умолчанию. При включённой интеграции жалобы, инструкция, код диагноза и ближайший пункт плана отправляются в Yandex Cloud. Используйте только синтетические данные; не вводите ФИО, контакты и номера документов.</p>
+          <label className="field"><span>Заключение врача — проверьте и отредактируйте</span><textarea className="conclusion-editor"
+            placeholder="Сформируйте демонстрационный шаблон или введите заключение вручную…" value={conclusion}
+            onChange={(event) => setConclusion(event.target.value)} disabled={busy || encounterSavedToday} maxLength={12000} /></label>
           <div className="encounter-actions">
-            <button className="button button-primary" onClick={() => void encounter()} disabled={busy || encounterSavedToday}>
+            <button type="button" className="button button-secondary" onClick={() => void generateConclusionDraft()} disabled={busy || encounterSavedToday}>
+              <Icon name="activity" />{draft ? "Сформировать заново" : "Сформировать черновик"}
+            </button>
+            <button type="button" className="button button-primary" onClick={() => void encounter()} disabled={busy || encounterSavedToday}>
               <Icon name="check" />{busy ? "Сохраняем…" : encounterSavedToday ? "Приём сохранён сегодня" : "Сохранить приём"}
             </button>
-            <button className="button button-secondary" onClick={openTherapy} disabled={busy}><Icon name="activity" />ПВТ и даты терапии</button>
+            <button type="button" className="button button-quiet" onClick={openTherapy} disabled={busy}><Icon name="activity" />ПВТ и даты терапии</button>
           </div>
-          {draft && <div className="draft-card"><div className="draft-label"><Icon name="activity" />Демонстрационный черновик · требует проверки врача</div><p>{draft}</p></div>}
+          {draft && <div className="draft-card"><div className="draft-label"><Icon name="activity" />Исходный черновик сохранится отдельно</div>
+            <p>Текст выше доступен для редактирования. При сохранении будет записан и исходный вариант, и проверенный врачом текст; подпись не ставится автоматически.</p></div>}
         </section>}
 
         {patient.encounters && patient.encounters.length > 0 && <section className="drawer-section history-section">
           <div className="section-heading"><div><p className="eyebrow">Хронология</p><h3>История приёмов</h3></div><span className="section-count">{patient.encounters.length}</span></div>
           <div className="timeline">{patient.encounters.map((visit) => <article key={visit.id} className="timeline-item">
-            <span className="timeline-dot" /><div><time>{fmtDate(visit.visit_date)}</time><p>{visit.conclusion ?? visit.draft_conclusion ?? "Запись без текста заключения"}</p>
+            <span className="timeline-dot" /><div><time>{fmtDate(visit.visit_date)}</time>
+              {visit.draft_conclusion && <div className="history-conclusion history-source"><b>Исходный черновик</b><p>{visit.draft_conclusion}</p></div>}
+              <div className="history-conclusion"><b>Заключение врача</b><p>{visit.conclusion ?? "Не заполнено"}</p></div>
               {!visit.signed && <span className="unsigned-tag">Черновик · не подписан</span>}</div>
           </article>)}</div>
         </section>}
       </aside>
+
+      {planEditItem && <Modal title="Редактировать событие плана"
+        description="Изменения доступны только для будущих запланированных событий и будут записаны в журнал аудита."
+        onClose={() => setPlanEditItem(null)} busy={busy}>
+        <form className="modal-form" onSubmit={submitPlanEdit}>
+          <label className="field"><span>Название события <i>*</i></span><input data-autofocus value={planEditForm.title}
+            onChange={(event) => setPlanEditForm((current) => ({ ...current, title: event.target.value }))}
+            disabled={busy} maxLength={240} required /></label>
+          <div className="form-grid modal-form-grid">
+            <label className="field"><span>Новая дата <i>*</i></span><input type="date" value={planEditForm.due_date}
+              min={localTomorrowInput()} onChange={(event) => setPlanEditForm((current) => ({ ...current, due_date: event.target.value }))}
+              disabled={busy} required /></label>
+            <label className="field"><span>Окно выполнения, дней <i>*</i></span><input type="number" min={0} max={90}
+              value={planEditForm.window_days} onChange={(event) => setPlanEditForm((current) => ({ ...current, window_days: event.target.value }))}
+              disabled={busy} required /></label>
+          </div>
+          <label className="field"><span>Причина изменения <i>*</i></span><textarea value={planEditForm.reason}
+            onChange={(event) => setPlanEditForm((current) => ({ ...current, reason: event.target.value }))}
+            disabled={busy} maxLength={500} required placeholder="Кратко укажите основание для изменения срока или названия" /></label>
+          <p className="field-hint">Завершённые, просроченные и отменённые события остаются неизменными. Автоматический план по клиническим правилам не заменяется ИИ.</p>
+          <Feedback error={modalError} />
+          <div className="modal-actions"><button type="button" className="button button-quiet" onClick={() => setPlanEditItem(null)} disabled={busy}>Отмена</button>
+            <button className="button button-primary" type="submit" disabled={busy}>{busy ? "Сохраняем…" : "Сохранить изменения"}</button></div>
+        </form>
+      </Modal>}
 
       {completionItem && <Modal title="Отметить событие выполненным"
         description={`${completionItem.title} · плановая дата ${fmtDate(completionItem.due_date)}`} onClose={() => setCompletionItem(null)} busy={busy}>

@@ -121,6 +121,28 @@ class PatientPatch(BaseModel):
         return value
 
 
+class PlanItemUpdateIn(BaseModel):
+    title: str = Field(min_length=1, max_length=240)
+    due_date: date
+    window_days: int = Field(ge=0, le=90)
+    reason: str = Field(min_length=1, max_length=500)
+
+    @field_validator("title", "reason")
+    @classmethod
+    def trim_required_text(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Заполните обязательное поле")
+        return value
+
+    @field_validator("due_date")
+    @classmethod
+    def plan_date_is_in_the_future(cls, value: date) -> date:
+        if value <= date.today():
+            raise ValueError("Для редактирования укажите дату позже сегодняшней")
+        return value
+
+
 class PlanCompleteIn(BaseModel):
     result: str | None = Field(default=None, max_length=5000)
     completed_at: date | None = None
@@ -133,12 +155,25 @@ class PlanCompleteIn(BaseModel):
         return value
 
 
+class EncounterDraftIn(BaseModel):
+    complaints: str | None = Field(default=None, max_length=10000)
+    instructions: str | None = Field(default=None, max_length=2000)
+
+    @field_validator("complaints", "instructions")
+    @classmethod
+    def strip_optional_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return value.strip() or None
+
+
 class EncounterIn(BaseModel):
     complaints: str | None = Field(default=None, max_length=10000)
-    conclusion: str | None = Field(default=None, max_length=10000)
+    conclusion: str | None = Field(default=None, max_length=12000)
+    draft_conclusion: str | None = Field(default=None, max_length=12000)
     complete_visit_item: bool = True
 
-    @field_validator("complaints", "conclusion")
+    @field_validator("complaints", "conclusion", "draft_conclusion")
     @classmethod
     def strip_optional_text(cls, value: str | None) -> str | None:
         if value is None:

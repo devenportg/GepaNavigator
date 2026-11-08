@@ -275,9 +275,11 @@ textarea { min-height: 92px; resize: vertical; line-height: 1.55; }
 .plan-table td:nth-child(2) { min-width: 95px; }
 .plan-table td:nth-child(3) { min-width: 95px; }
 .plan-table .rule-note { max-width: 290px; }
+.plan-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .unsigned-tag { display: inline-flex; padding: 5px 8px; border: 1px solid #eee4d0; border-radius: 999px; color: #92783f; background: #fbf7eb; font-size: var(--type-size-9); font-weight: 700; white-space: nowrap; }
 .encounter-section > .field { margin-top: 13px; }
 .encounter-section textarea { min-height: 74px; }
+.encounter-section .conclusion-editor { min-height: 230px; line-height: 1.65; }
 .encounter-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 14px; }
 .draft-card { margin-top: 14px; padding: 14px; color: #4c5d74; background: #f3f2f8; border: 1px solid #e5e2ef; border-radius: 12px; }
 .draft-label { display: flex; align-items: center; gap: 7px; color: #65598a; font-size: var(--type-size-9); font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
@@ -288,7 +290,10 @@ textarea { min-height: 92px; resize: vertical; line-height: 1.55; }
 .timeline-item:not(:last-child)::after { position: absolute; top: 14px; bottom: 0; left: 6px; width: 1px; content: ''; background: #dce9e7; }
 .timeline-dot { width: 9px; height: 9px; z-index: 1; flex: 0 0 auto; margin-top: 4px; background: var(--teal); border: 2px solid #e4f2f0; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
 .timeline-item time { color: #668087; font-size: var(--type-size-9); font-weight: 700; }
-.timeline-item p { margin: 4px 0 7px; color: #536970; font-size: var(--type-size-10); line-height: 1.5; }
+.timeline-item p { margin: 4px 0 7px; color: #536970; font-size: var(--type-size-10); line-height: 1.5; white-space: pre-wrap; }
+.history-conclusion { margin-top: 9px; }
+.history-conclusion > b { color: #526773; font-size: var(--type-size-9); }
+.history-source { padding: 10px 12px; border-left: 3px solid #b8aacd; border-radius: 7px; background: #f6f3fa; }
 .drawer-loading { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: var(--type-size-10); }
 .drawer-loading .loading-spinner { width: 16px; height: 16px; }
 

@@ -83,7 +83,7 @@ class Encounter(Base):
     visit_date: Mapped[date] = mapped_column(Date, default=date.today)
     complaints: Mapped[str] = mapped_column(Text, nullable=True)
     conclusion: Mapped[str] = mapped_column(Text, nullable=True)
-    draft_conclusion: Mapped[str] = mapped_column(Text, nullable=True)  # черновик «GPT» (mock-фасад)
+    draft_conclusion: Mapped[str] = mapped_column(Text, nullable=True)  # исходный локальный шаблон до правки врача
     signed: Mapped[bool] = mapped_column(Boolean, default=False)
     patient = relationship("Patient", back_populates="encounters")
 

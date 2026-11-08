@@ -1,12 +1,13 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
-import { api, getToken, post } from "./api";
+import { api, getToken, patch, post } from "./api";
 import type { Analytics, Patient, User } from "./types";
 
 vi.mock("./api", () => ({
   api: vi.fn(),
   getToken: vi.fn(),
+  patch: vi.fn(),
   post: vi.fn(),
   setToken: vi.fn(),
 }));
@@ -26,6 +27,11 @@ const doctor: User = {
   org: "МО тест",
 };
 let activeUser = analyst;
+const futureDueDate = (() => {
+  const date = new Date();
+  date.setDate(date.getDate() + 30);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+})();
 const worklist = {
   summary: { green: 0, yellow: 0, red: 0, purple: 0 },
   patients: [],
@@ -53,13 +59,13 @@ const focusPatient: Patient = {
   therapy_end: null,
   svr12_achieved: null,
   zone: "yellow",
-  next_due: "2026-10-20",
+  next_due: futureDueDate,
   overdue_count: 0,
   plan: [{
     id: 56,
     kind: "LABS",
     title: "Контроль анализов",
-    due_date: "2026-10-20",
+    due_date: futureDueDate,
     window_days: 14,
     status: "PLANNED",
     rule_ref: "",
@@ -91,6 +97,7 @@ beforeEach(() => {
     if (path === "/api/worklist") return Promise.resolve(worklist);
     return Promise.reject(new Error(`Unexpected API request: ${path}`));
   }) as typeof api);
+  vi.mocked(patch).mockResolvedValue({} as never);
   vi.mocked(post).mockResolvedValue({} as never);
 });
 
@@ -179,5 +186,70 @@ describe("role-based navigation", () => {
     await waitFor(() => expect(screen.queryByRole("heading", { name: "Отметить событие выполненным" })).not.toBeInTheDocument());
     expect(document.activeElement).toBe(openDialogButton);
     expect(resultDialog).not.toBeInTheDocument();
+  });
+
+  it("allows a doctor to edit a future planned event with an explicit reason", async () => {
+    activeUser = doctor;
+    vi.mocked(api).mockImplementation(((path: string) => {
+      if (path === "/api/auth/me") return Promise.resolve(activeUser);
+      if (path === "/api/worklist") return Promise.resolve({ summary: worklist.summary, patients: [focusPatient] });
+      if (path === `/api/patients/${focusPatient.id}`) return Promise.resolve(focusPatient);
+      return Promise.reject(new Error(`Unexpected API request: ${path}`));
+    }) as typeof api);
+
+    const changedDate = new Date();
+    changedDate.setDate(changedDate.getDate() + 60);
+    const dueDate = `${changedDate.getFullYear()}-${String(changedDate.getMonth() + 1).padStart(2, "0")}-${String(changedDate.getDate()).padStart(2, "0")}`;
+    render(<App />);
+    fireEvent.click(await screen.findByRole("button", { name: focusPatient.full_name }));
+    fireEvent.click(await screen.findByRole("button", {
+      name: `Редактировать событие плана: ${focusPatient.plan[0].title}`,
+    }));
+
+    const dialog = await screen.findByRole("dialog", { name: "Редактировать событие плана" });
+    fireEvent.change(screen.getByLabelText(/Название события/), { target: { value: "Контрольный анализ крови" } });
+    fireEvent.change(screen.getByLabelText(/Новая дата/), { target: { value: dueDate } });
+    fireEvent.change(screen.getByLabelText(/Окно выполнения/), { target: { value: "21" } });
+    fireEvent.change(screen.getByLabelText(/Причина изменения/), { target: { value: "Срок согласован с пациентом" } });
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить изменения" }));
+
+    await waitFor(() => expect(patch).toHaveBeenCalledWith(`/api/plan-items/${focusPatient.plan[0].id}`, {
+      title: "Контрольный анализ крови",
+      due_date: dueDate,
+      window_days: 21,
+      reason: "Срок согласован с пациентом",
+    }));
+    expect(dialog).not.toBeInTheDocument();
+  });
+
+  it("lets a doctor edit a generated conclusion before saving the encounter", async () => {
+    activeUser = doctor;
+    vi.mocked(api).mockImplementation(((path: string) => {
+      if (path === "/api/auth/me") return Promise.resolve(activeUser);
+      if (path === "/api/worklist") return Promise.resolve({ summary: worklist.summary, patients: [focusPatient] });
+      if (path === `/api/patients/${focusPatient.id}`) return Promise.resolve(focusPatient);
+      return Promise.reject(new Error(`Unexpected API request: ${path}`));
+    }) as typeof api);
+    const generated = "ЧЕРНОВИК\nЖалобы и осмотр\nЖалоб нет.";
+    vi.mocked(post)
+      .mockResolvedValueOnce({ draft_conclusion: generated, notice: "Демо-шаблон; модель не подключена." } as never)
+      .mockResolvedValueOnce({ draft_conclusion: generated, conclusion: "Текст после проверки врача", signed: false } as never);
+
+    render(<App />);
+    fireEvent.click(await screen.findByRole("button", { name: focusPatient.full_name }));
+    fireEvent.change(await screen.findByLabelText(/Жалобы и данные осмотра/), { target: { value: "Жалоб нет." } });
+    fireEvent.change(await screen.findByLabelText(/Инструкция для оформления/), { target: { value: "Кратко" } });
+    fireEvent.click(await screen.findByRole("button", { name: "Сформировать черновик" }));
+
+    const conclusionField = await screen.findByLabelText(/Заключение врача/);
+    await waitFor(() => expect(conclusionField).toHaveValue(generated));
+    fireEvent.change(conclusionField, { target: { value: "Текст после проверки врача" } });
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить приём" }));
+
+    await waitFor(() => expect(post).toHaveBeenNthCalledWith(2, `/api/patients/${focusPatient.id}/encounters`, {
+      complaints: "Жалоб нет.",
+      conclusion: "Текст после проверки врача",
+      draft_conclusion: generated,
+    }));
   });
 });

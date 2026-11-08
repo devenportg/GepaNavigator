@@ -20,6 +20,13 @@ services:
       JWT_SECRET: ${JWT_SECRET:-local-development-only-secret-change-before-deployment-2026}
       INTEGRATION_KEY: ${INTEGRATION_KEY:-local-demo-integration-key-change-before-deployment-2026}
       SEED_DEMO: ${SEED_DEMO:-false}
+      YANDEXGPT_ENABLED: ${YANDEXGPT_ENABLED:-false}
+      YANDEXGPT_API_KEY: ${YANDEXGPT_API_KEY:-}
+      YANDEXGPT_FOLDER_ID: ${YANDEXGPT_FOLDER_ID:-}
+      YANDEXGPT_MODEL_VERSION: ${YANDEXGPT_MODEL_VERSION:-latest}
+      YANDEXGPT_TIMEOUT_SECONDS: ${YANDEXGPT_TIMEOUT_SECONDS:-30}
+      YANDEXGPT_MAX_TOKENS: ${YANDEXGPT_MAX_TOKENS:-1200}
+      YANDEXGPT_TEMPERATURE: ${YANDEXGPT_TEMPERATURE:-0.2}
     depends_on:
       db:
         condition: service_healthy

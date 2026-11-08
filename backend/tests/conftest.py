@@ -5,6 +5,7 @@ from pathlib import Path
 os.environ["DATABASE_URL"] = "sqlite:///./test_gepa.db"
 os.environ["SEED_DEMO"] = "true"
 os.environ["JWT_SECRET"] = "gepanavigator-test-secret-at-least-32-bytes-long"
+os.environ["YANDEXGPT_ENABLED"] = "false"
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import pytest  # noqa: E402

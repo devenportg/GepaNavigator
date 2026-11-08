@@ -9,19 +9,21 @@ from sqlalchemy import inspect, or_, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from . import rules, services
+from . import rules, services, yandexgpt
 from .config import settings
 from .db import Base, SessionLocal, engine, get_db
 from .models import AuditLog, CareTask, Encounter, Notification, Patient, PlanItem, User
 from .schemas import (
     CareCompleteIn,
     ConsentIn,
+    EncounterDraftIn,
     EncounterIn,
     GisEventIn,
     LoginIn,
     PatientIn,
     PatientPatch,
     PlanCompleteIn,
+    PlanItemUpdateIn,
     TherapyIn,
 )
 from .security import create_token, get_current_user, require_roles, verify_password
@@ -258,6 +260,39 @@ def set_consent(patient_id: int, body: ConsentIn, db: Session = Depends(get_db),
 
 
 # ---------- Клинический слой / план (блок 2) ----------
+@app.patch("/api/plan-items/{item_id}")
+def update_plan_item(item_id: int, body: PlanItemUpdateIn, db: Session = Depends(get_db),
+                     user: User = Depends(require_roles("doctor", "head"))):
+    item = db.get(PlanItem, item_id)
+    if not item:
+        raise HTTPException(404, "Событие плана не найдено")
+    patient = db.get(Patient, item.patient_id)
+    if not patient:
+        raise HTTPException(404, "Пациент не найден")
+    ensure_patient_visible(patient, user)
+    if patient.status in ("DISCHARGED", "DECEASED"):
+        raise HTTPException(409, "Нельзя менять план снятого с наблюдения пациента")
+    if item.status != "PLANNED" or item.due_date <= date.today():
+        raise HTTPException(409, "Редактировать можно только будущие запланированные события")
+
+    previous = (item.title, item.due_date, item.window_days)
+    item.title = body.title
+    item.due_date = body.due_date
+    item.window_days = body.window_days
+    services.audit(
+        db, user.full_name, "plan.edit", "plan_item", item.id,
+        f"title={previous[0]!r}->{item.title!r}; due_date={previous[1]}->{item.due_date}; "
+        f"window_days={previous[2]}->{item.window_days}; reason={body.reason}",
+        org=user.org,
+    )
+    db.commit()
+    return {
+        "id": item.id, "kind": item.kind, "title": item.title, "due_date": item.due_date,
+        "window_days": item.window_days,
+        "status": rules.effective_status(item.status, item.due_date, item.window_days, date.today()),
+    }
+
+
 @app.post("/api/plan-items/{item_id}/complete")
 def complete_item(item_id: int, body: PlanCompleteIn, db: Session = Depends(get_db),
                   user: User = Depends(require_roles("doctor", "head", "nurse"))):
@@ -310,6 +345,56 @@ def cancel_item(item_id: int, db: Session = Depends(get_db),
 
 
 # ---------- Приём врача (блок 3) ----------
+@app.post("/api/patients/{patient_id}/encounters/draft")
+def draft_encounter(patient_id: int, body: EncounterDraftIn, db: Session = Depends(get_db),
+                    user: User = Depends(require_roles("doctor", "head"))):
+    p = db.get(Patient, patient_id)
+    if not p:
+        raise HTTPException(404, "Пациент не найден")
+    ensure_patient_visible(p, user)
+    if p.status in ("DISCHARGED", "DECEASED"):
+        raise HTTPException(409, "Нельзя формировать заключение для снятого с наблюдения пациента")
+    if db.query(Encounter).filter(
+        Encounter.patient_id == p.id, Encounter.visit_date == date.today()
+    ).first():
+        raise HTTPException(409, "Для пациента уже сохранена запись о приёме сегодня")
+
+    next_item = db.query(PlanItem).filter(
+        PlanItem.patient_id == p.id, PlanItem.status == "PLANNED", PlanItem.due_date >= date.today()
+    ).order_by(PlanItem.due_date, PlanItem.id).first()
+    next_step = (
+        f"Ближайшее событие по текущему плану: {next_item.title} — {next_item.due_date.isoformat()}."
+        if next_item else "Дальнейшие действия сверить с текущим планом наблюдения и клиническими рекомендациями."
+    )
+    if settings.yandexgpt_enabled:
+        try:
+            draft = yandexgpt.generate_conclusion(
+                diagnosis_code=p.diagnosis_code,
+                nosology=p.nosology,
+                complaints=body.complaints,
+                instructions=body.instructions,
+                next_step=next_step,
+            )
+        except yandexgpt.YandexGPTConfigurationError:
+            raise HTTPException(503, "YandexGPT включён, но не настроен. Проверьте серверную конфигурацию.") from None
+        except yandexgpt.YandexGPTError:
+            # Never substitute a local or fabricated response after a failed cloud call.
+            raise HTTPException(502, "Не удалось получить черновик от YandexGPT. Попробуйте позже.") from None
+        mode = "yandexgpt"
+        notice = (
+            "Черновик сформирован YandexGPT. Проверьте и отредактируйте его перед сохранением. "
+            "В Yandex Cloud переданы введённые жалобы и инструкция, код диагноза и ближайшее событие плана; "
+            "система не добавляет ФИО и регистрационные идентификаторы. Не вводите их в текст. Автоподпись не ставится."
+        )
+    else:
+        draft = rules.draft_conclusion(p.full_name, p.nosology, p.diagnosis_code, body.complaints, next_step)
+        mode = "demo"
+        notice = "Сформирован локальный демонстрационный шаблон; YandexGPT не подключён."
+        if body.instructions:
+            notice += " Инструкция принята, но пока не обрабатывается моделью."
+    return {"draft_conclusion": draft, "mode": mode, "notice": notice}
+
+
 @app.post("/api/patients/{patient_id}/encounters", status_code=201)
 def create_encounter(patient_id: int, body: EncounterIn, db: Session = Depends(get_db),
                      user: User = Depends(require_roles("doctor", "head"))):
@@ -343,11 +428,11 @@ def create_encounter(patient_id: int, body: EncounterIn, db: Session = Depends(g
             visit.status = "DONE"
             visit.completed_at = today
 
-    next_step = "явка на плановый приём через 6 месяцев, лабораторный контроль по плану наблюдения."
-    draft = rules.draft_conclusion(p.full_name, p.nosology, p.diagnosis_code, body.complaints, next_step)
-    # E-signature is not implemented: entered text remains an unsigned draft in this MVP.
+    # Store the source draft separately from the physician-reviewed final text.
+    # When the doctor enters a conclusion manually, no generated draft is fabricated after saving.
+    # E-signature is not implemented: the encounter remains unsigned in this MVP.
     enc = Encounter(patient_id=p.id, doctor_id=user.id, visit_date=today, complaints=body.complaints,
-                    conclusion=body.conclusion, draft_conclusion=draft, signed=False)
+                    conclusion=body.conclusion, draft_conclusion=body.draft_conclusion, signed=False)
     db.add(enc)
     db.flush()  # sessionmaker(autoflush=False): encounter is visible to the query below
 

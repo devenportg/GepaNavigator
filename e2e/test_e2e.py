@@ -74,6 +74,7 @@ def stack(tmp_path_factory) -> Stack:
         "JWT_SECRET": "gepanavigator-e2e-secret-at-least-32-bytes",
         "INTEGRATION_KEY": "gepanavigator-e2e-integration-key-2026",
         "SEED_DEMO": "true",
+        "YANDEXGPT_ENABLED": "false",
     }
     backend = subprocess.Popen(
         [sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", str(be_port)],
@@ -154,8 +155,14 @@ def test_full_clinical_pathway(stack: Stack, client: httpx.Client, doctor):
     assert any(n["kind"] == "WELCOME" and n["status"] == "QUEUED" for n in notes)
 
     # 3. Приём закрывает плановый визит и создаёт следующий цикл наблюдения.
+    draft_response = client.post(f"{stack.frontend}/api/patients/{patient_id}/encounters/draft",
+                                 json={"complaints": "Жалоб нет.", "instructions": "Краткий официальный стиль"},
+                                 headers=doctor)
+    assert draft_response.status_code == 200
+    generated_draft = draft_response.json()["draft_conclusion"]
     r = client.post(f"{stack.frontend}/api/patients/{patient_id}/encounters",
-                    json={"complaints": "Жалоб нет.", "conclusion": "Начать ПВТ."}, headers=doctor)
+                    json={"complaints": "Жалоб нет.", "conclusion": "Начать ПВТ.",
+                          "draft_conclusion": generated_draft}, headers=doctor)
     assert r.status_code == 201 and "Черновик заключения" in r.json()["draft_conclusion"]
     detail = client.get(f"{stack.frontend}/api/patients/{patient_id}", headers=doctor).json()
     assert any(i["kind"] == "VISIT" and i["status"] == "PLANNED" for i in detail["plan"])

@@ -16,7 +16,7 @@ e2e:
 	python -m pytest e2e -q
 
 run-be:
-	cd backend && SEED_DEMO=true uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+	cd backend && if [ -f ../.env ]; then SEED_DEMO=true uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --env-file ../.env; else SEED_DEMO=true uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload; fi
 
 run-fe:
 	cd frontend && npm run dev
