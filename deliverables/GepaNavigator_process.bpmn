@@ -1,0 +1,472 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_GepaNavigator" targetNamespace="https://gepanavigator.example/bpmn" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL https://www.omg.org/spec/BPMN/20100501/BPMN20.xsd">
+  <bpmn:message id="Message_AI_Request" name="Запрос черновика"/>
+  <bpmn:message id="Message_AI_Draft" name="Текстовый черновик"/>
+  <bpmn:message id="Message_AI_ProviderError" name="Ошибка сервиса"/>
+  <bpmn:error id="Error_AI_Failure" name="Ошибка / таймаут YandexGPT" errorCode="AI_REQUEST_FAILED"/>
+  <bpmn:process id="Process_Main" name="Приём врача и подготовка заключения" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_Main">
+      <bpmn:lane id="Lane_Doctor" name="Врач">
+        <bpmn:flowNodeRef>Start_Work</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_SelectPatient</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ReviewPlan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_NeedAI</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ManualConclusion</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ReviewDraft</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_ConclusionReady</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_SaveEncounter</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_System" name="ГепаНавигатор">
+        <bpmn:flowNodeRef>Task_ShowWorklist</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_AI</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Boundary_AI_Error</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ShowAIError</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ManualAfterError</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PersistEncounter</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_UpdatePlan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_EncounterSaved</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_Work" name="Врач открывает рабочий список"/>
+    <bpmn:serviceTask id="Task_ShowWorklist" name="Показать сигналы и ближайшие события"/>
+    <bpmn:userTask id="Task_SelectPatient" name="Выбрать пациента и открыть карту"/>
+    <bpmn:userTask id="Task_ReviewPlan" name="Сверить план и зафиксировать факты приёма"/>
+    <bpmn:exclusiveGateway id="Gateway_NeedAI" name="Врач запрашивает AI-черновик?" gatewayDirection="Diverging" default="Flow_Manual"/>
+    <bpmn:userTask id="Task_ManualConclusion" name="Внести заключение вручную"/>
+    <bpmn:subProcess id="SubProcess_AI" name="Получить черновик YandexGPT" triggeredByEvent="false">
+      <bpmn:startEvent id="Start_AI_Request" name="Запрос создан"/>
+      <bpmn:serviceTask id="Task_BuildPayload" name="Проверить конфигурацию и собрать минимальный контекст"/>
+      <bpmn:exclusiveGateway id="Gateway_AI_Configured" name="YandexGPT включён и настроен?" gatewayDirection="Diverging" default="Flow_AI_NotConfigured"/>
+      <bpmn:serviceTask id="Task_AI_NotConfigured" name="Подготовить ошибку конфигурации"/>
+      <bpmn:endEvent id="End_AI_NotConfigured" name="Ошибка конфигурации">
+        <bpmn:errorEventDefinition id="End_AI_NotConfigured_def" errorRef="Error_AI_Failure"/>
+      </bpmn:endEvent>
+      <bpmn:sendTask id="Task_SendAIRequest" name="Отправить запрос в Yandex Cloud" messageRef="Message_AI_Request"/>
+      <bpmn:eventBasedGateway id="Gateway_AI_Wait" name="Ожидать ответ или таймаут" gatewayDirection="Diverging" eventGatewayType="Exclusive"/>
+      <bpmn:intermediateCatchEvent id="Catch_AI_Draft" name="Ответ: черновик">
+        <bpmn:messageEventDefinition id="Catch_AI_Draft_def" messageRef="Message_AI_Draft"/>
+      </bpmn:intermediateCatchEvent>
+      <bpmn:intermediateCatchEvent id="Catch_AI_ProviderError" name="Ответ: ошибка сервиса">
+        <bpmn:messageEventDefinition id="Catch_AI_ProviderError_def" messageRef="Message_AI_ProviderError"/>
+      </bpmn:intermediateCatchEvent>
+      <bpmn:intermediateCatchEvent id="Catch_AI_Timeout" name="Таймаут">
+        <bpmn:timerEventDefinition id="Catch_AI_Timeout_def">
+          <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT30S</bpmn:timeDuration>
+        </bpmn:timerEventDefinition>
+      </bpmn:intermediateCatchEvent>
+      <bpmn:serviceTask id="Task_ReturnDraft" name="Передать редактируемый текст врачу"/>
+      <bpmn:endEvent id="End_AI_Draft" name="Черновик получен"/>
+      <bpmn:serviceTask id="Task_NormalizeProviderError" name="Нормализовать ошибку сервиса"/>
+      <bpmn:endEvent id="End_AI_ProviderError" name="Ошибка YandexGPT">
+        <bpmn:errorEventDefinition id="End_AI_ProviderError_def" errorRef="Error_AI_Failure"/>
+      </bpmn:endEvent>
+      <bpmn:serviceTask id="Task_NormalizeTimeout" name="Зафиксировать таймаут"/>
+      <bpmn:endEvent id="End_AI_Timeout" name="Таймаут YandexGPT">
+        <bpmn:errorEventDefinition id="End_AI_Timeout_def" errorRef="Error_AI_Failure"/>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_AI_Start_Build" sourceRef="Start_AI_Request" targetRef="Task_BuildPayload"/>
+      <bpmn:sequenceFlow id="Flow_AI_Build_Config" sourceRef="Task_BuildPayload" targetRef="Gateway_AI_Configured"/>
+      <bpmn:sequenceFlow id="Flow_AI_NotConfigured" sourceRef="Gateway_AI_Configured" targetRef="Task_AI_NotConfigured" name="Нет">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">$configured = false</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:sequenceFlow id="Flow_AI_NotConfigured_End" sourceRef="Task_AI_NotConfigured" targetRef="End_AI_NotConfigured"/>
+      <bpmn:sequenceFlow id="Flow_AI_Configured" sourceRef="Gateway_AI_Configured" targetRef="Task_SendAIRequest" name="Да">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">$configured = true</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:sequenceFlow id="Flow_AI_Send_Wait" sourceRef="Task_SendAIRequest" targetRef="Gateway_AI_Wait"/>
+      <bpmn:sequenceFlow id="Flow_AI_Wait_Draft" sourceRef="Gateway_AI_Wait" targetRef="Catch_AI_Draft"/>
+      <bpmn:sequenceFlow id="Flow_AI_Wait_Error" sourceRef="Gateway_AI_Wait" targetRef="Catch_AI_ProviderError"/>
+      <bpmn:sequenceFlow id="Flow_AI_Wait_Timeout" sourceRef="Gateway_AI_Wait" targetRef="Catch_AI_Timeout"/>
+      <bpmn:sequenceFlow id="Flow_AI_Draft_Return" sourceRef="Catch_AI_Draft" targetRef="Task_ReturnDraft"/>
+      <bpmn:sequenceFlow id="Flow_AI_Draft_End" sourceRef="Task_ReturnDraft" targetRef="End_AI_Draft"/>
+      <bpmn:sequenceFlow id="Flow_AI_Error_Normalize" sourceRef="Catch_AI_ProviderError" targetRef="Task_NormalizeProviderError"/>
+      <bpmn:sequenceFlow id="Flow_AI_Error_End" sourceRef="Task_NormalizeProviderError" targetRef="End_AI_ProviderError"/>
+      <bpmn:sequenceFlow id="Flow_AI_Timeout_Normalize" sourceRef="Catch_AI_Timeout" targetRef="Task_NormalizeTimeout"/>
+      <bpmn:sequenceFlow id="Flow_AI_Timeout_End" sourceRef="Task_NormalizeTimeout" targetRef="End_AI_Timeout"/>
+    </bpmn:subProcess>
+    <bpmn:userTask id="Task_ReviewDraft" name="Проверить и отредактировать текст"/>
+    <bpmn:boundaryEvent id="Boundary_AI_Error" name="Ошибка или таймаут" attachedToRef="SubProcess_AI" cancelActivity="true">
+      <bpmn:errorEventDefinition id="Boundary_AI_Error_def" errorRef="Error_AI_Failure"/>
+    </bpmn:boundaryEvent>
+    <bpmn:serviceTask id="Task_ShowAIError" name="Показать ошибку без подмены ответа"/>
+    <bpmn:userTask id="Task_ManualAfterError" name="Продолжить вручную или повторить позже"/>
+    <bpmn:exclusiveGateway id="Gateway_ConclusionReady" name="Заключение готово" gatewayDirection="Converging"/>
+    <bpmn:userTask id="Task_SaveEncounter" name="Сохранить приём"/>
+    <bpmn:serviceTask id="Task_PersistEncounter" name="Записать приём как неподписанный"/>
+    <bpmn:serviceTask id="Task_UpdatePlan" name="Обновить контрольные события по правилам MVP"/>
+    <bpmn:endEvent id="End_EncounterSaved" name="Приём сохранён; электронной подписи нет"/>
+    <bpmn:sequenceFlow id="Flow_Start_Show" sourceRef="Start_Work" targetRef="Task_ShowWorklist"/>
+    <bpmn:sequenceFlow id="Flow_Show_Select" sourceRef="Task_ShowWorklist" targetRef="Task_SelectPatient"/>
+    <bpmn:sequenceFlow id="Flow_Select_Review" sourceRef="Task_SelectPatient" targetRef="Task_ReviewPlan"/>
+    <bpmn:sequenceFlow id="Flow_Review_Gateway" sourceRef="Task_ReviewPlan" targetRef="Gateway_NeedAI"/>
+    <bpmn:sequenceFlow id="Flow_Manual" sourceRef="Gateway_NeedAI" targetRef="Task_ManualConclusion" name="Нет — врач пишет вручную">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">$aiRequested = false</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_AI" sourceRef="Gateway_NeedAI" targetRef="SubProcess_AI" name="Да — врач запросил черновик">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">$aiRequested = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_AI_Review" sourceRef="SubProcess_AI" targetRef="Task_ReviewDraft"/>
+    <bpmn:sequenceFlow id="Flow_AI_Error" sourceRef="Boundary_AI_Error" targetRef="Task_ShowAIError"/>
+    <bpmn:sequenceFlow id="Flow_Error_Manual" sourceRef="Task_ShowAIError" targetRef="Task_ManualAfterError"/>
+    <bpmn:sequenceFlow id="Flow_Manual_Merge" sourceRef="Task_ManualConclusion" targetRef="Gateway_ConclusionReady"/>
+    <bpmn:sequenceFlow id="Flow_Review_Merge" sourceRef="Task_ReviewDraft" targetRef="Gateway_ConclusionReady"/>
+    <bpmn:sequenceFlow id="Flow_Error_Merge" sourceRef="Task_ManualAfterError" targetRef="Gateway_ConclusionReady"/>
+    <bpmn:sequenceFlow id="Flow_Merge_Save" sourceRef="Gateway_ConclusionReady" targetRef="Task_SaveEncounter"/>
+    <bpmn:sequenceFlow id="Flow_Save_Persist" sourceRef="Task_SaveEncounter" targetRef="Task_PersistEncounter"/>
+    <bpmn:sequenceFlow id="Flow_Persist_Update" sourceRef="Task_PersistEncounter" targetRef="Task_UpdatePlan"/>
+    <bpmn:sequenceFlow id="Flow_Update_End" sourceRef="Task_UpdatePlan" targetRef="End_EncounterSaved"/>
+    <bpmn:textAnnotation id="Annotation_AI_Guardrails">
+      <bpmn:text>YandexGPT: жалобы, инструкция, код диагноза и ближайший пункт плана; без ФИО/ID как отдельных полей. Свободный текст обезличить. Только черновик; план и электронная подпись не меняются.</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_AI_Guardrails" sourceRef="Annotation_AI_Guardrails" targetRef="SubProcess_AI"/>
+  </bpmn:process>
+  <bpmn:process id="Process_Yandex" name="Yandex Cloud / YandexGPT" isExecutable="false">
+    <bpmn:startEvent id="Start_Yandex_Request" name="Получен запрос">
+      <bpmn:messageEventDefinition id="Start_Yandex_Request_def" messageRef="Message_AI_Request"/>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_YandexGenerate" name="Сформировать текст только по переданным фактам"/>
+    <bpmn:exclusiveGateway id="Gateway_Yandex_Result" name="Черновик сформирован?" gatewayDirection="Diverging" default="Flow_Yandex_Error"/>
+    <bpmn:endEvent id="End_Yandex_Draft" name="Вернуть текстовый черновик">
+      <bpmn:messageEventDefinition id="End_Yandex_Draft_def" messageRef="Message_AI_Draft"/>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="End_Yandex_Error" name="Вернуть ошибку сервиса">
+      <bpmn:messageEventDefinition id="End_Yandex_Error_def" messageRef="Message_AI_ProviderError"/>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Yandex_Start_Task" sourceRef="Start_Yandex_Request" targetRef="Task_YandexGenerate"/>
+    <bpmn:sequenceFlow id="Flow_Yandex_Task_Gateway" sourceRef="Task_YandexGenerate" targetRef="Gateway_Yandex_Result"/>
+    <bpmn:sequenceFlow id="Flow_Yandex_Draft" sourceRef="Gateway_Yandex_Result" targetRef="End_Yandex_Draft" name="Да">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">$success = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Yandex_Error" sourceRef="Gateway_Yandex_Result" targetRef="End_Yandex_Error" name="Нет / ошибка">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">$success = false</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+  <bpmn:collaboration id="Collaboration_GepaNavigator" name="Врач, ГепаНавигатор и YandexGPT">
+    <bpmn:participant id="Participant_Clinic" name="Медицинская организация: врач + ГепаНавигатор" processRef="Process_Main"/>
+    <bpmn:participant id="Participant_Yandex" name="Yandex Cloud / YandexGPT" processRef="Process_Yandex"/>
+    <bpmn:messageFlow id="MessageFlow_AI_Request" name="Запрос черновика" sourceRef="Task_SendAIRequest" targetRef="Start_Yandex_Request" messageRef="Message_AI_Request"/>
+    <bpmn:messageFlow id="MessageFlow_AI_Draft" name="Текстовый черновик" sourceRef="End_Yandex_Draft" targetRef="Catch_AI_Draft" messageRef="Message_AI_Draft"/>
+    <bpmn:messageFlow id="MessageFlow_AI_Error" name="Ошибка сервиса" sourceRef="End_Yandex_Error" targetRef="Catch_AI_ProviderError" messageRef="Message_AI_ProviderError"/>
+  </bpmn:collaboration>
+  <bpmndi:BPMNDiagram id="Diagram_Overview" name="Основной маршрут">
+    <bpmndi:BPMNPlane id="Plane_Overview" bpmnElement="Collaboration_GepaNavigator">
+      <bpmndi:BPMNShape id="DI_Participant_Clinic" bpmnElement="Participant_Clinic" isExpanded="true">
+        <dc:Bounds x="40" y="40" width="1980" height="465"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Lane_Doctor" bpmnElement="Lane_Doctor">
+        <dc:Bounds x="40" y="40" width="1980" height="230"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Lane_System" bpmnElement="Lane_System">
+        <dc:Bounds x="40" y="270" width="1980" height="235"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Start_Work" bpmnElement="Start_Work">
+        <dc:Bounds x="150" y="130" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_ShowWorklist" bpmnElement="Task_ShowWorklist">
+        <dc:Bounds x="220" y="120" width="145" height="58"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_SelectPatient" bpmnElement="Task_SelectPatient">
+        <dc:Bounds x="410" y="120" width="150" height="58"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_ReviewPlan" bpmnElement="Task_ReviewPlan">
+        <dc:Bounds x="610" y="120" width="165" height="58"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Gateway_NeedAI" bpmnElement="Gateway_NeedAI">
+        <dc:Bounds x="825" y="124" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_ManualConclusion" bpmnElement="Task_ManualConclusion">
+        <dc:Bounds x="930" y="95" width="150" height="58"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_SubProcess_AI" bpmnElement="SubProcess_AI" isExpanded="false">
+        <dc:Bounds x="930" y="200" width="180" height="68"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_ReviewDraft" bpmnElement="Task_ReviewDraft">
+        <dc:Bounds x="1160" y="120" width="155" height="58"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Gateway_ConclusionReady" bpmnElement="Gateway_ConclusionReady">
+        <dc:Bounds x="1360" y="124" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_SaveEncounter" bpmnElement="Task_SaveEncounter">
+        <dc:Bounds x="1460" y="120" width="145" height="58"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_PersistEncounter" bpmnElement="Task_PersistEncounter">
+        <dc:Bounds x="1640" y="315" width="170" height="58"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_UpdatePlan" bpmnElement="Task_UpdatePlan">
+        <dc:Bounds x="1850" y="315" width="145" height="58"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_End_EncounterSaved" bpmnElement="End_EncounterSaved">
+        <dc:Bounds x="2000" y="326" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Boundary_AI_Error" bpmnElement="Boundary_AI_Error">
+        <dc:Bounds x="1095" y="240" width="24" height="24"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_ShowAIError" bpmnElement="Task_ShowAIError">
+        <dc:Bounds x="1170" y="315" width="170" height="58"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_ManualAfterError" bpmnElement="Task_ManualAfterError">
+        <dc:Bounds x="1370" y="315" width="180" height="58"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="DI_Flow_Start_Show" bpmnElement="Flow_Start_Show">
+        <di:waypoint x="186" y="148"/>
+        <di:waypoint x="220" y="148"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_Show_Select" bpmnElement="Flow_Show_Select">
+        <di:waypoint x="365" y="149"/>
+        <di:waypoint x="410" y="149"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_Select_Review" bpmnElement="Flow_Select_Review">
+        <di:waypoint x="560" y="149"/>
+        <di:waypoint x="610" y="149"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_Review_Gateway" bpmnElement="Flow_Review_Gateway">
+        <di:waypoint x="775" y="149"/>
+        <di:waypoint x="825" y="149"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_Manual" bpmnElement="Flow_Manual">
+        <di:waypoint x="850" y="124"/>
+        <di:waypoint x="890" y="124"/>
+        <di:waypoint x="890" y="124"/>
+        <di:waypoint x="930" y="124"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_AI" bpmnElement="Flow_AI">
+        <di:waypoint x="850" y="174"/>
+        <di:waypoint x="890" y="174"/>
+        <di:waypoint x="890" y="234"/>
+        <di:waypoint x="930" y="234"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_AI_Review" bpmnElement="Flow_AI_Review">
+        <di:waypoint x="1110" y="234"/>
+        <di:waypoint x="1130" y="234"/>
+        <di:waypoint x="1130" y="149"/>
+        <di:waypoint x="1160" y="149"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_AI_Error" bpmnElement="Flow_AI_Error">
+        <di:waypoint x="1107" y="252"/>
+        <di:waypoint x="1140" y="252"/>
+        <di:waypoint x="1140" y="344"/>
+        <di:waypoint x="1170" y="344"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_Error_Manual" bpmnElement="Flow_Error_Manual">
+        <di:waypoint x="1340" y="344"/>
+        <di:waypoint x="1370" y="344"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_Manual_Merge" bpmnElement="Flow_Manual_Merge">
+        <di:waypoint x="1080" y="124"/>
+        <di:waypoint x="1330" y="124"/>
+        <di:waypoint x="1360" y="149"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_Review_Merge" bpmnElement="Flow_Review_Merge">
+        <di:waypoint x="1315" y="149"/>
+        <di:waypoint x="1360" y="149"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_Error_Merge" bpmnElement="Flow_Error_Merge">
+        <di:waypoint x="1550" y="344"/>
+        <di:waypoint x="1600" y="344"/>
+        <di:waypoint x="1600" y="149"/>
+        <di:waypoint x="1360" y="149"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_Merge_Save" bpmnElement="Flow_Merge_Save">
+        <di:waypoint x="1410" y="149"/>
+        <di:waypoint x="1460" y="149"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_Save_Persist" bpmnElement="Flow_Save_Persist">
+        <di:waypoint x="1605" y="149"/>
+        <di:waypoint x="1620" y="149"/>
+        <di:waypoint x="1620" y="344"/>
+        <di:waypoint x="1640" y="344"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_Persist_Update" bpmnElement="Flow_Persist_Update">
+        <di:waypoint x="1810" y="344"/>
+        <di:waypoint x="1850" y="344"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_Update_End" bpmnElement="Flow_Update_End">
+        <di:waypoint x="1995" y="344"/>
+        <di:waypoint x="2000" y="344"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  <bpmndi:BPMNDiagram id="Diagram_AI_Detail" name="Подпроцесс YandexGPT — детали">
+    <bpmndi:BPMNPlane id="Plane_AI_Detail" bpmnElement="Collaboration_GepaNavigator">
+      <bpmndi:BPMNShape id="DI2_Participant_Clinic" bpmnElement="Participant_Clinic" isExpanded="true">
+        <dc:Bounds x="40" y="40" width="1560" height="395"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_Lane_Doctor" bpmnElement="Lane_Doctor">
+        <dc:Bounds x="40" y="40" width="1560" height="90"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_Lane_System" bpmnElement="Lane_System">
+        <dc:Bounds x="40" y="130" width="1560" height="305"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_SubProcess_AI" bpmnElement="SubProcess_AI" isExpanded="true">
+        <dc:Bounds x="185" y="170" width="1290" height="235"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_Start_AI_Request" bpmnElement="Start_AI_Request">
+        <dc:Bounds x="215" y="270" width="32" height="32"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_Task_BuildPayload" bpmnElement="Task_BuildPayload">
+        <dc:Bounds x="275" y="257" width="165" height="58"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_Gateway_AI_Configured" bpmnElement="Gateway_AI_Configured">
+        <dc:Bounds x="465" y="261" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_Task_AI_NotConfigured" bpmnElement="Task_AI_NotConfigured">
+        <dc:Bounds x="540" y="335" width="155" height="54"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_End_AI_NotConfigured" bpmnElement="End_AI_NotConfigured">
+        <dc:Bounds x="715" y="344" width="34" height="34"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_Task_SendAIRequest" bpmnElement="Task_SendAIRequest">
+        <dc:Bounds x="540" y="255" width="160" height="58"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_Gateway_AI_Wait" bpmnElement="Gateway_AI_Wait">
+        <dc:Bounds x="730" y="259" width="52" height="52"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_Catch_AI_Draft" bpmnElement="Catch_AI_Draft">
+        <dc:Bounds x="815" y="218" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_Catch_AI_ProviderError" bpmnElement="Catch_AI_ProviderError">
+        <dc:Bounds x="815" y="278" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_Catch_AI_Timeout" bpmnElement="Catch_AI_Timeout">
+        <dc:Bounds x="815" y="343" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_Task_ReturnDraft" bpmnElement="Task_ReturnDraft">
+        <dc:Bounds x="890" y="205" width="165" height="58"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_End_AI_Draft" bpmnElement="End_AI_Draft">
+        <dc:Bounds x="1080" y="217" width="34" height="34"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_Task_NormalizeProviderError" bpmnElement="Task_NormalizeProviderError">
+        <dc:Bounds x="890" y="270" width="165" height="58"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_End_AI_ProviderError" bpmnElement="End_AI_ProviderError">
+        <dc:Bounds x="1080" y="283" width="34" height="34"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_Task_NormalizeTimeout" bpmnElement="Task_NormalizeTimeout">
+        <dc:Bounds x="890" y="338" width="165" height="58"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_End_AI_Timeout" bpmnElement="End_AI_Timeout">
+        <dc:Bounds x="1080" y="350" width="34" height="34"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_Participant_Yandex" bpmnElement="Participant_Yandex" isExpanded="true">
+        <dc:Bounds x="40" y="470" width="1560" height="170"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_Start_Yandex_Request" bpmnElement="Start_Yandex_Request">
+        <dc:Bounds x="440" y="535" width="34" height="34"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_Task_YandexGenerate" bpmnElement="Task_YandexGenerate">
+        <dc:Bounds x="525" y="523" width="230" height="58"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_Gateway_Yandex_Result" bpmnElement="Gateway_Yandex_Result">
+        <dc:Bounds x="800" y="527" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_End_Yandex_Draft" bpmnElement="End_Yandex_Draft">
+        <dc:Bounds x="915" y="500" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI2_End_Yandex_Error" bpmnElement="End_Yandex_Error">
+        <dc:Bounds x="915" y="575" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="DI2_Flow_AI_Start_Build" bpmnElement="Flow_AI_Start_Build">
+        <di:waypoint x="247" y="286"/>
+        <di:waypoint x="275" y="286"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_Flow_AI_Build_Config" bpmnElement="Flow_AI_Build_Config">
+        <di:waypoint x="440" y="286"/>
+        <di:waypoint x="465" y="286"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_Flow_AI_NotConfigured" bpmnElement="Flow_AI_NotConfigured">
+        <di:waypoint x="490" y="311"/>
+        <di:waypoint x="490" y="362"/>
+        <di:waypoint x="540" y="362"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_Flow_AI_NotConfigured_End" bpmnElement="Flow_AI_NotConfigured_End">
+        <di:waypoint x="695" y="362"/>
+        <di:waypoint x="715" y="362"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_Flow_AI_Configured" bpmnElement="Flow_AI_Configured">
+        <di:waypoint x="515" y="286"/>
+        <di:waypoint x="540" y="286"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_Flow_AI_Send_Wait" bpmnElement="Flow_AI_Send_Wait">
+        <di:waypoint x="700" y="284"/>
+        <di:waypoint x="730" y="284"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_Flow_AI_Wait_Draft" bpmnElement="Flow_AI_Wait_Draft">
+        <di:waypoint x="782" y="270"/>
+        <di:waypoint x="798" y="236"/>
+        <di:waypoint x="815" y="236"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_Flow_AI_Wait_Error" bpmnElement="Flow_AI_Wait_Error">
+        <di:waypoint x="782" y="284"/>
+        <di:waypoint x="815" y="296"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_Flow_AI_Wait_Timeout" bpmnElement="Flow_AI_Wait_Timeout">
+        <di:waypoint x="782" y="300"/>
+        <di:waypoint x="800" y="361"/>
+        <di:waypoint x="815" y="361"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_Flow_AI_Draft_Return" bpmnElement="Flow_AI_Draft_Return">
+        <di:waypoint x="851" y="236"/>
+        <di:waypoint x="890" y="234"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_Flow_AI_Draft_End" bpmnElement="Flow_AI_Draft_End">
+        <di:waypoint x="1055" y="234"/>
+        <di:waypoint x="1080" y="234"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_Flow_AI_Error_Normalize" bpmnElement="Flow_AI_Error_Normalize">
+        <di:waypoint x="851" y="296"/>
+        <di:waypoint x="890" y="299"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_Flow_AI_Error_End" bpmnElement="Flow_AI_Error_End">
+        <di:waypoint x="1055" y="299"/>
+        <di:waypoint x="1080" y="300"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_Flow_AI_Timeout_Normalize" bpmnElement="Flow_AI_Timeout_Normalize">
+        <di:waypoint x="851" y="361"/>
+        <di:waypoint x="890" y="367"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_Flow_AI_Timeout_End" bpmnElement="Flow_AI_Timeout_End">
+        <di:waypoint x="1055" y="367"/>
+        <di:waypoint x="1080" y="367"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_Flow_Yandex_Start_Task" bpmnElement="Flow_Yandex_Start_Task">
+        <di:waypoint x="474" y="552"/>
+        <di:waypoint x="525" y="552"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_Flow_Yandex_Task_Gateway" bpmnElement="Flow_Yandex_Task_Gateway">
+        <di:waypoint x="755" y="552"/>
+        <di:waypoint x="800" y="552"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_Flow_Yandex_Draft" bpmnElement="Flow_Yandex_Draft">
+        <di:waypoint x="825" y="527"/>
+        <di:waypoint x="875" y="527"/>
+        <di:waypoint x="875" y="518"/>
+        <di:waypoint x="915" y="518"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_Flow_Yandex_Error" bpmnElement="Flow_Yandex_Error">
+        <di:waypoint x="825" y="577"/>
+        <di:waypoint x="875" y="577"/>
+        <di:waypoint x="875" y="593"/>
+        <di:waypoint x="915" y="593"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_MessageFlow_AI_Request" bpmnElement="MessageFlow_AI_Request">
+        <di:waypoint x="620" y="313"/>
+        <di:waypoint x="620" y="465"/>
+        <di:waypoint x="457" y="465"/>
+        <di:waypoint x="457" y="535"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_MessageFlow_AI_Draft" bpmnElement="MessageFlow_AI_Draft">
+        <di:waypoint x="933" y="500"/>
+        <di:waypoint x="933" y="450"/>
+        <di:waypoint x="833" y="450"/>
+        <di:waypoint x="833" y="254"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI2_MessageFlow_AI_Error" bpmnElement="MessageFlow_AI_Error">
+        <di:waypoint x="933" y="575"/>
+        <di:waypoint x="933" y="455"/>
+        <di:waypoint x="833" y="455"/>
+        <di:waypoint x="833" y="314"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
