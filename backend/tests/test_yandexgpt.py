@@ -1,8 +1,7 @@
 import pytest
-from pydantic import SecretStr
-
 from app import yandexgpt
 from app.config import settings
+from pydantic import SecretStr
 
 
 def test_yandexgpt_request_uses_server_credentials_and_minimal_russian_context(monkeypatch):
