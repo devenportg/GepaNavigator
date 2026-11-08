@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -7,7 +7,7 @@ from .db import Base
 
 
 def utcnow():
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class User(Base):
@@ -30,7 +30,7 @@ class Patient(Base):
     snils: Mapped[str] = mapped_column(String(20), unique=True, index=True, nullable=True)
     oms: Mapped[str] = mapped_column(String(20), nullable=True)
     phone: Mapped[str] = mapped_column(String(30), nullable=True)
-    consent_notifications: Mapped[bool] = mapped_column(Boolean, default=True)
+    consent_notifications: Mapped[bool] = mapped_column(Boolean, default=False)
     preferred_channel: Mapped[str] = mapped_column(String(20), default="sms")
 
     diagnosis_code: Mapped[str] = mapped_column(String(10), default="B18.2")  # МКБ-10 B18.*
@@ -109,7 +109,7 @@ class Notification(Base):
     channel: Mapped[str] = mapped_column(String(20), default="sms")
     kind: Mapped[str] = mapped_column(String(40))  # WELCOME|VISIT_REMINDER|LABS_REMINDER|SVR12_REMINDER|RESULT_READY
     text: Mapped[str] = mapped_column(Text)
-    # QUEUED|SENT|SKIPPED_NO_CONSENT
+    # QUEUED|SENT|SKIPPED_NO_CONSENT|CANCELLED_NO_CONSENT|CANCELLED_SUPERSEDED|CANCELLED_PATIENT_INACTIVE
     status: Mapped[str] = mapped_column(String(25), default="QUEUED")
     scheduled_for: Mapped[date] = mapped_column(Date, default=date.today)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
@@ -124,4 +124,5 @@ class AuditLog(Base):
     entity: Mapped[str] = mapped_column(String(60))
     entity_id: Mapped[int] = mapped_column(Integer, nullable=True)
     details: Mapped[str] = mapped_column(Text, default="")
+    org: Mapped[str | None] = mapped_column(String(200), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

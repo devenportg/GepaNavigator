@@ -15,6 +15,22 @@ export const STATUS_LABELS: Record<string, string> = {
   DECEASED: "Умер",
 };
 
+export const PLAN_STATUS_LABELS: Record<string, string> = {
+  PLANNED: "Запланировано",
+  DONE: "Выполнено",
+  OVERDUE: "Просрочено",
+  CANCELLED: "Отменено",
+};
+
+export const NOTIFICATION_STATUS_LABELS: Record<string, string> = {
+  QUEUED: "В очереди",
+  SENT: "Отправлено",
+  SKIPPED_NO_CONSENT: "Не отправлено: нет согласия",
+  CANCELLED_NO_CONSENT: "Отменено: согласие отозвано",
+  CANCELLED_SUPERSEDED: "Отменено: дата терапии изменена",
+  CANCELLED_PATIENT_INACTIVE: "Отменено: наблюдение закрыто",
+};
+
 export const ROLE_LABELS: Record<string, string> = {
   doctor: "Врач-инфекционист",
   head: "Заведующий отделением",

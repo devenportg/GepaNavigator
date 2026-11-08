@@ -3,6 +3,7 @@
 body { margin:0; font-family:"Segoe UI", system-ui, -apple-system, sans-serif; background:var(--bg); color:var(--ink); }
 button { cursor:pointer; border:1px solid var(--line); background:#fff; border-radius:8px; padding:7px 12px; font-size:14px; }
 button:hover { border-color:var(--primary); }
+button:disabled { opacity:.55; cursor:not-allowed; }
 button.primary { background:var(--primary); color:#fff; border-color:var(--primary); }
 button.link { border:none; background:none; color:var(--primary); padding:0; font-weight:600; }
 input, select, textarea { border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:14px; font-family:inherit; }

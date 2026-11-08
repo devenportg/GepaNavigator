@@ -9,6 +9,7 @@
   - УВО-12: ПЦР РНК ВГС через 12 недель после окончания ПВТ; УВО-24 при необходимости
 Окно допустимости визита: ±14 дней.
 """
+import re
 from dataclasses import dataclass
 from datetime import date, timedelta
 
@@ -82,6 +83,62 @@ def plan_after_therapy_end(therapy_end: date) -> list[PlanSpec]:
                  therapy_end + timedelta(weeks=24), 30,
                  "КР: УВО-24 по показаниям после УВО-12"),
     ]
+
+
+def svr_result_achieved(result: str | None) -> bool | None:
+    """Conservative parser for explicit demo result text.
+
+    Returns True for clearly undetectable/negative results, False for clearly
+    detectable/positive results, and None for missing or ambiguous text. It is
+    intentionally not a clinical interpretation engine.
+    """
+    if not result or not result.strip():
+        return None
+    text = " ".join(result.casefold().replace("ё", "е").split())
+
+    # Evaluate both directions: contradictory free text is ambiguous and must
+    # not be silently converted into either a successful or failed outcome.
+    explicit_failure = any(re.search(pattern, text) for pattern in (
+        r"\bуво\s+не\s+(?:достигнут|достигнуто|получен|подтвержден)\b",
+        r"\bне\s+(?:достигнут|достигнуто|получен|подтвержден)\s+уво\b",
+        r"\bне\s+отрицательн",
+        r"\bпцр\s*\+",
+    ))
+    positive_word = re.search(r"\bположительн", text)
+    if positive_word and not re.search(r"\bне\s+положительн", text):
+        explicit_failure = True
+
+    achieved_svr = any(re.search(pattern, text) for pattern in (
+        r"\bуво\s+достигнут",
+        r"\bне\s+(?:был\s+)?обнаружен(?:а|о|ы)?\b",
+        r"\bне\s+(?:был\s+)?выявлен(?:а|о|ы)?\b",
+        r"\bне\s+определяется\b",
+        r"\bотрицательн",
+        r"\b(?:рнк|вирусная\s+нагрузка)\s+отсутствует\b",
+        r"\bnot\s+detected\b",
+        r"\bundetectable\b",
+    ))
+
+    # Positive qualitative result. Skip detections explicitly negated by "не".
+    detection_words = re.finditer(
+        r"\b(?:обнаружен|обнаружена|обнаружено|обнаружены|выявлен|выявлена|выявлено|выявлены|detected)\b",
+        text,
+    )
+    detected = False
+    for match in detection_words:
+        prefix = text[max(0, match.start() - 20):match.start()]
+        if not re.search(r"\b(?:не|not)\s+(?:был\s+)?$", prefix):
+            detected = True
+            break
+
+    failed_svr = explicit_failure or detected
+    if failed_svr and achieved_svr:
+        return None
+    if failed_svr:
+        return False
+    if achieved_svr:
+        return True
+    return None
 
 
 def effective_status(status: str, due: date, window_days: int, today: date) -> str:

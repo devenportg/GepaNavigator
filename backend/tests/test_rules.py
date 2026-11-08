@@ -53,3 +53,15 @@ def test_reminder_schedule():
     assert rules.reminder_kind_for("VISIT", 3) is None
     assert rules.reminder_kind_for("LABS", 10) == "LABS_REMINDER"
     assert rules.reminder_kind_for("SVR12", 7) == "SVR12_REMINDER"
+
+
+def test_svr_result_parser_is_conservative_and_handles_negation():
+    assert rules.svr_result_achieved("РНК ВГС не обнаружена") is True
+    assert rules.svr_result_achieved("ПЦР отрицательная") is True
+    assert rules.svr_result_achieved("РНК обнаружена") is False
+    assert rules.svr_result_achieved("РНК ВГС обнаружена, результат положительный") is False
+    assert rules.svr_result_achieved("РНК не обнаружена, но в повторном анализе обнаружена") is None
+    assert rules.svr_result_achieved("УВО не достигнут") is False
+    assert rules.svr_result_achieved("УВО достигнут") is True
+    assert rules.svr_result_achieved("УВО") is None
+    assert rules.svr_result_achieved("") is None

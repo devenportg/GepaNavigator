@@ -1,7 +1,7 @@
 import hashlib
 import hmac
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import jwt
 from fastapi import Depends, HTTPException, status
@@ -26,7 +26,7 @@ def verify_password(password: str, stored: str) -> bool:
         _, salt_hex, digest_hex = stored.split("$")
         digest = hashlib.pbkdf2_hmac("sha256", password.encode(), bytes.fromhex(salt_hex), 120_000)
         return hmac.compare_digest(digest.hex(), digest_hex)
-    except Exception:
+    except (AttributeError, TypeError, ValueError):
         return False
 
 
@@ -35,7 +35,7 @@ def create_token(user: User) -> str:
         "sub": str(user.id),
         "email": user.email,
         "role": user.role,
-        "exp": datetime.now(timezone.utc) + timedelta(minutes=settings.jwt_expire_minutes),
+        "exp": datetime.now(UTC) + timedelta(minutes=settings.jwt_expire_minutes),
     }
     return jwt.encode(payload, settings.jwt_secret, algorithm="HS256")
 
@@ -47,9 +47,10 @@ def get_current_user(
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Требуется авторизация")
     try:
         payload = jwt.decode(creds.credentials, settings.jwt_secret, algorithms=["HS256"])
-    except jwt.PyJWTError:
+        user_id = int(payload["sub"])
+    except (jwt.PyJWTError, KeyError, TypeError, ValueError):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Невалидный токен")
-    user = db.get(User, int(payload["sub"]))
+    user = db.get(User, user_id)
     if not user:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Пользователь не найден")
     return user

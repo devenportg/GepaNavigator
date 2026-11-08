@@ -4,13 +4,13 @@ from pathlib import Path
 
 os.environ["DATABASE_URL"] = "sqlite:///./test_gepa.db"
 os.environ["SEED_DEMO"] = "true"
+os.environ["JWT_SECRET"] = "gepanavigator-test-secret-at-least-32-bytes-long"
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import pytest  # noqa: E402
-from fastapi.testclient import TestClient  # noqa: E402
-
 from app.db import Base, engine  # noqa: E402
 from app.main import app  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
 
 
 @pytest.fixture(scope="session", autouse=True)

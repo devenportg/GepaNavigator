@@ -41,8 +41,9 @@ def seed(db: Session):
     for idx, (name, diag, nos, fib, cirr, status, offset) in enumerate(specs, start=1):
         p = Patient(
             full_name=name, birth_date=date(1975 + idx, (idx % 12) + 1, min(idx * 3, 28)),
-            sex="M" if idx % 2 else "F", snils=f"112-233-445 {idx:02d}", oms=f"16000000000000{idx:02d}",
-            phone=f"+791700000{idx:02d}", diagnosis_code=diag, nosology=nos, fibrosis_stage=fib,
+            sex="M" if idx % 2 else "F", snils=f"112233445{idx:02d}", oms=f"16000000000000{idx:02d}",
+            phone=f"+791700000{idx:02d}", consent_notifications=True,
+            diagnosis_code=diag, nosology=nos, fibrosis_stage=fib,
             cirrhosis=cirr, genotype="1b" if nos == "HCV" else None, status=status,
             enrollment_trigger="gis_event", enrolled_at=today - timedelta(days=90),
             doctor_id=doctor.id,
@@ -55,7 +56,8 @@ def seed(db: Session):
 
     # Пациент на контроле УВО-12 через ~5 недель -> фиолетовая зона
     p = Patient(full_name="Орлова Светлана Дмитриевна", birth_date=date(1988, 4, 12), sex="F",
-                snils="112-233-445 95", oms="1600000000000095", phone="+79170000095",
+                snils="11223344595", oms="1600000000000095", phone="+79170000095",
+                consent_notifications=True,
                 diagnosis_code="B18.2", nosology="HCV", fibrosis_stage="F1", status="POST_THERAPY",
                 enrollment_trigger="frvg", enrolled_at=today - timedelta(days=200), doctor_id=doctor.id,
                 therapy_regimen="Софосбувир/Велпатасвир 12 нед", therapy_start=today - timedelta(days=140),

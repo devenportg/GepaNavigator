@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ZONE_META, age, fmtDate, pct } from "./utils";
+import { NOTIFICATION_STATUS_LABELS, PLAN_STATUS_LABELS, ZONE_META, age, fmtDate, pct } from "./utils";
 
 describe("utils", () => {
   it("форматирует даты по-русски", () => {
@@ -15,5 +15,10 @@ describe("utils", () => {
     expect(pct(null)).toBe("—");
     expect(Object.keys(ZONE_META).sort()).toEqual(["green", "purple", "red", "yellow"]);
     expect(ZONE_META.purple.label).toContain("УВО");
+  });
+  it("переводит статусы плана и очереди уведомлений на понятный язык", () => {
+    expect(PLAN_STATUS_LABELS.PLANNED).toBe("Запланировано");
+    expect(PLAN_STATUS_LABELS.OVERDUE).toBe("Просрочено");
+    expect(NOTIFICATION_STATUS_LABELS.CANCELLED_NO_CONSENT).toContain("согласие отозвано");
   });
 });

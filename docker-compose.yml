@@ -17,9 +17,9 @@ services:
     build: ./backend
     environment:
       DATABASE_URL: postgresql+psycopg2://gepa:${POSTGRES_PASSWORD:-gepa_dev_password}@db:5432/gepa
-      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
-      INTEGRATION_KEY: ${INTEGRATION_KEY:-gis-demo-key}
-      SEED_DEMO: ${SEED_DEMO:-true}
+      JWT_SECRET: ${JWT_SECRET:-local-development-only-secret-change-before-deployment-2026}
+      INTEGRATION_KEY: ${INTEGRATION_KEY:-local-demo-integration-key-change-before-deployment-2026}
+      SEED_DEMO: ${SEED_DEMO:-false}
     depends_on:
       db:
         condition: service_healthy
