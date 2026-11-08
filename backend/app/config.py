@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     yandexgpt_enabled: bool = False
     yandexgpt_api_key: SecretStr | None = Field(default=None, repr=False)
     yandexgpt_folder_id: str | None = None
+    yandexgpt_model_uri: str | None = Field(default=None, max_length=250)
     yandexgpt_model_version: str = Field(
         default="latest", min_length=1, max_length=30, pattern=r"^[A-Za-z0-9._-]+$"
     )

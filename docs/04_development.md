@@ -27,7 +27,7 @@
 - **Backend:** Python 3.11+ / FastAPI / SQLAlchemy / PostgreSQL (в dev — SQLite), JWT (PBKDF2-хеш паролей)
 - **Frontend:** TypeScript / React 18 / Vite, одно окно врача, встраивание в ГИС ЭЗ РТ — через единый origin (`/api` проксируется)
 - **Инфраструктура:** локальный Docker Compose (PostgreSQL + backend + frontend/nginx); целевая облачная платформа — только Yandex Cloud.
-- **AI:** единственный AI-инструмент — YandexGPT через Yandex Cloud AI Studio Chat Completions API. Интеграция настраивается серверными переменными `YANDEXGPT_*` и выключена по умолчанию; без неё используется локальный шаблон `rules.draft_conclusion`. Облачный вызов выполняется только по явному действию врача, использует синтетический контекст, не меняет клинический план и не подписывает приём.
+- **AI:** единственный AI-инструмент — YandexGPT через Yandex Cloud AI Studio Chat Completions API. Интеграция настраивается серверными переменными `YANDEXGPT_*` и выключена по умолчанию; при заданном `YANDEXGPT_MODEL_URI` используется точный URI инстанса AI Studio, иначе URI строится из ID папки и `YANDEXGPT_MODEL_VERSION`. Без интеграции используется локальный шаблон `rules.draft_conclusion`. Облачный вызов выполняется только по явному действию врача, использует синтетический контекст, не меняет клинический план и не подписывает приём.
 
 ## Как запустить
 

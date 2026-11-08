@@ -9,6 +9,11 @@ def test_yandexgpt_request_uses_server_credentials_and_minimal_russian_context(m
     monkeypatch.setattr(settings, "yandexgpt_api_key", SecretStr("synthetic-test-api-key"))
     monkeypatch.setattr(settings, "yandexgpt_folder_id", "synthetic-folder-123")
     monkeypatch.setattr(settings, "yandexgpt_model_version", "latest")
+    monkeypatch.setattr(
+        settings,
+        "yandexgpt_model_uri",
+        "gpt://synthetic-folder-123/yandexgpt-4-lite/latest",
+    )
 
     captured = {}
 
@@ -43,7 +48,7 @@ def test_yandexgpt_request_uses_server_credentials_and_minimal_russian_context(m
     assert captured["url"] == yandexgpt.CHAT_COMPLETIONS_URL
     assert captured["headers"]["Authorization"] == "Api-Key synthetic-test-api-key"
     assert captured["headers"]["x-data-logging-enabled"] == "false"
-    assert captured["payload"]["model"] == "gpt://synthetic-folder-123/yandexgpt/latest"
+    assert captured["payload"]["model"] == "gpt://synthetic-folder-123/yandexgpt-4-lite/latest"
     assert captured["payload"]["stream"] is False
     user_message = captured["payload"]["messages"][1]["content"]
     assert "Жалоб нет." in user_message
@@ -51,6 +56,32 @@ def test_yandexgpt_request_uses_server_credentials_and_minimal_russian_context(m
     assert "B18.2" in user_message
     assert "2027-01-15" in user_message
     assert "synthetic-test-api-key" not in user_message
+
+
+def test_yandexgpt_uses_legacy_uri_when_instance_uri_is_not_set(monkeypatch):
+    monkeypatch.setattr(settings, "yandexgpt_enabled", True)
+    monkeypatch.setattr(settings, "yandexgpt_api_key", SecretStr("synthetic-test-api-key"))
+    monkeypatch.setattr(settings, "yandexgpt_folder_id", "synthetic-folder-123")
+    monkeypatch.setattr(settings, "yandexgpt_model_uri", None)
+    monkeypatch.setattr(settings, "yandexgpt_model_version", "latest")
+
+    _, model_uri = yandexgpt._provider_configuration()
+
+    assert model_uri == "gpt://synthetic-folder-123/yandexgpt/latest"
+
+
+def test_yandexgpt_rejects_model_uri_from_another_folder(monkeypatch):
+    monkeypatch.setattr(settings, "yandexgpt_enabled", True)
+    monkeypatch.setattr(settings, "yandexgpt_api_key", SecretStr("synthetic-test-api-key"))
+    monkeypatch.setattr(settings, "yandexgpt_folder_id", "synthetic-folder-123")
+    monkeypatch.setattr(
+        settings,
+        "yandexgpt_model_uri",
+        "gpt://another-folder/yandexgpt-4-lite/latest",
+    )
+
+    with pytest.raises(yandexgpt.YandexGPTConfigurationError, match="ID указанного каталога"):
+        yandexgpt._provider_configuration()
 
 
 def test_yandexgpt_missing_credentials_fails_before_network(monkeypatch):

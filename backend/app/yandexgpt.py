@@ -15,6 +15,9 @@ from .config import settings
 
 CHAT_COMPLETIONS_URL = "https://llm.api.cloud.yandex.net/v1/chat/completions"
 MODEL_NAME = "yandexgpt"
+MODEL_URI_PATTERN = re.compile(
+    r"^gpt://(?P<folder_id>[A-Za-z0-9_-]+)/(?P<model_name>[A-Za-z0-9._-]+)/(?P<version>[A-Za-z0-9._-]+)$"
+)
 MAX_DRAFT_CHARS = 12000
 
 SYSTEM_PROMPT = """Ты формируешь только редактируемый демонстрационный черновик заключения на русском языке.
@@ -34,7 +37,7 @@ class YandexGPTConfigurationError(YandexGPTError):
     """YandexGPT was enabled without all required runtime configuration."""
 
 
-def _provider_credentials() -> tuple[str, str]:
+def _provider_configuration() -> tuple[str, str]:
     secret = settings.yandexgpt_api_key
     folder_id = (settings.yandexgpt_folder_id or "").strip()
     api_key = secret.get_secret_value().strip() if secret else ""
@@ -46,9 +49,23 @@ def _provider_credentials() -> tuple[str, str]:
     # Prevent malformed identifiers from changing the model URI or request target.
     if not re.fullmatch(r"[A-Za-z0-9_-]+", folder_id):
         raise YandexGPTConfigurationError("Некорректный ID каталога Yandex Cloud")
-    if not re.fullmatch(r"[A-Za-z0-9._-]+", settings.yandexgpt_model_version):
-        raise YandexGPTConfigurationError("Некорректная версия модели YandexGPT")
-    return api_key, folder_id
+
+    configured_uri = (settings.yandexgpt_model_uri or "").strip()
+    if configured_uri:
+        match = MODEL_URI_PATTERN.fullmatch(configured_uri)
+        if not match:
+            raise YandexGPTConfigurationError("Некорректный URI инстанса YandexGPT")
+        if match.group("folder_id") != folder_id:
+            raise YandexGPTConfigurationError(
+                "URI модели должен использовать ID указанного каталога Yandex Cloud"
+            )
+        model_uri = configured_uri
+    else:
+        if not re.fullmatch(r"[A-Za-z0-9._-]+", settings.yandexgpt_model_version):
+            raise YandexGPTConfigurationError("Некорректная версия модели YandexGPT")
+        model_uri = f"gpt://{folder_id}/{MODEL_NAME}/{settings.yandexgpt_model_version}"
+
+    return api_key, model_uri
 
 
 def generate_conclusion(
@@ -60,7 +77,7 @@ def generate_conclusion(
     next_step: str,
 ) -> str:
     """Generate a Russian draft without sending patient names or registry identifiers."""
-    api_key, folder_id = _provider_credentials()
+    api_key, model_uri = _provider_configuration()
     context = {
         "Код диагноза": diagnosis_code,
         "Нозология": nosology,
@@ -69,7 +86,7 @@ def generate_conclusion(
         "Ближайший пункт действующего плана наблюдения": next_step,
     }
     payload: dict[str, Any] = {
-        "model": f"gpt://{folder_id}/{MODEL_NAME}/{settings.yandexgpt_model_version}",
+        "model": model_uri,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": json.dumps(context, ensure_ascii=False)},
