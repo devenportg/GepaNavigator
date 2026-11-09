@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.db
+node_modules/
+dist/
+.env
+.pytest_cache/
+frontend/test_gepa.db
+test_gepa.db
+*.tsbuildinfo

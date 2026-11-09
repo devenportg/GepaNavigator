@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: gepa
+      POSTGRES_USER: gepa
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gepa_dev_password}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gepa"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg2://gepa:${POSTGRES_PASSWORD:-gepa_dev_password}@db:5432/gepa
+      JWT_SECRET: ${JWT_SECRET:-local-development-only-secret-change-before-deployment-2026}
+      INTEGRATION_KEY: ${INTEGRATION_KEY:-local-demo-integration-key-change-before-deployment-2026}
+      SEED_DEMO: ${SEED_DEMO:-false}
+      YANDEXGPT_ENABLED: ${YANDEXGPT_ENABLED:-false}
+      YANDEXGPT_API_KEY: ${YANDEXGPT_API_KEY:-}
+      YANDEXGPT_FOLDER_ID: ${YANDEXGPT_FOLDER_ID:-}
+      YANDEXGPT_MODEL_URI: ${YANDEXGPT_MODEL_URI:-}
+      YANDEXGPT_MODEL_VERSION: ${YANDEXGPT_MODEL_VERSION:-latest}
+      YANDEXGPT_TIMEOUT_SECONDS: ${YANDEXGPT_TIMEOUT_SECONDS:-30}
+      YANDEXGPT_MAX_TOKENS: ${YANDEXGPT_MAX_TOKENS:-1200}
+      YANDEXGPT_TEMPERATURE: ${YANDEXGPT_TEMPERATURE:-0.2}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  pgdata:
