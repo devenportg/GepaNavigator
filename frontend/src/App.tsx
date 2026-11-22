@@ -300,7 +300,7 @@ function Login({ onLogin }: { onLogin: (u: User) => void }) {
             <div><span><Icon name="shield" /></span><p><b>Фокус на непрерывности</b><small>Подсветка просрочек и контрольных точек</small></p></div>
           </div>
         </div>
-        <p className="login-footnote">Демонстрационный MVP · используйте только синтетические данные</p>
+        <p className="login-footnote">Демонстрационная версия · используйте только тестовые данные</p>
       </section>
       <section className="login-panel-wrap">
         <form className="login-card" onSubmit={submit}>
@@ -409,7 +409,7 @@ function Shell({ user, onLogout }: { user: User; onLogout: () => void }) {
         {view === "notifications" && showNotifications && <Notifications refreshToken={refreshToken} />}
         {view === "audit" && (user.role === "head" || user.role === "admin") && <Audit refreshToken={refreshToken} />}
       </main>
-      <footer className="app-footer"><span>ГепаНавигатор · демонстрационный MVP</span><span>Не для клинического применения</span></footer>
+      <footer className="app-footer"><span>ГепаНавигатор · демонстрационная версия</span><span>Не для клинического применения</span></footer>
       {selectedPatientId !== null && <PatientCard patientId={selectedPatientId} user={user} onClose={() => setSelectedPatientId(null)} />}
     </div>
   );

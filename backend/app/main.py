@@ -33,7 +33,7 @@ DEFAULT_ORG = "ГАУЗ «Поликлиника №1», Казань"
 
 
 def upgrade_audit_org_column():
-    """One-time additive migration for pre-MVP SQLite/PostgreSQL databases."""
+    """One-time additive migration for older SQLite/PostgreSQL databases."""
     inspector = inspect(engine)
     if "audit_logs" not in inspector.get_table_names():
         return
@@ -90,7 +90,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="ГепаНавигатор API",
     version="0.1.0",
-    description="Модуль диспансерного наблюдения больных хроническими гепатитами (MVP, этап 2)",
+    description="Модуль диспансерного наблюдения больных хроническими гепатитами",
     lifespan=lifespan,
 )
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -101,7 +101,7 @@ def user_out(u: User):
 
 
 def patient_scope(db: Session, user: User):
-    """Return patients the current staff member may access in the MVP.
+    """Return patients the current staff member may access.
 
     Doctors see assigned patients and unassigned referrals in their organization;
     care managers see their organization; admins have system-wide access.
@@ -454,7 +454,7 @@ def create_encounter(patient_id: int, body: EncounterIn, db: Session = Depends(g
 
     # Store the source draft separately from the physician-reviewed final text.
     # When the doctor enters a conclusion manually, no generated draft is fabricated after saving.
-    # E-signature is not implemented: the encounter remains unsigned in this MVP.
+    # E-signature is not implemented: the encounter remains unsigned in this demo.
     enc = Encounter(patient_id=p.id, doctor_id=user.id, visit_date=today, complaints=body.complaints,
                     conclusion=body.conclusion, draft_conclusion=body.draft_conclusion, signed=False)
     db.add(enc)
@@ -641,7 +641,7 @@ def analytics(db: Session = Depends(get_db), user: User = Depends(get_current_us
     return {
         "registry_total": len(patients),
         "active_total": len(active),
-        "coverage_note": "Охват = активные в регистре / все выявленные (в MVP знаменатель — регистр)",
+        "coverage_note": "Охват = активные в регистре / все выявленные (в демо знаменатель — регистр)",
         "zones": {z: sum(1 for r in rows if r["zone"] == z) for z in ("green", "yellow", "red", "purple")},
         "adherence": round(done / (done + overdue), 3) if (done + overdue) else None,
         "plan_done": done, "plan_overdue": overdue,
