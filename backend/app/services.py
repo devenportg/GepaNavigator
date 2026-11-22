@@ -5,8 +5,7 @@ from datetime import date, timedelta
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
-from . import rules
-from . import mailer
+from . import mailer, rules
 from .models import AuditLog, CareTask, Notification, Patient, PlanItem
 
 
