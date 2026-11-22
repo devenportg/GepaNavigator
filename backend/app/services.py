@@ -6,6 +6,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from . import rules
+from . import mailer
 from .models import AuditLog, CareTask, Notification, Patient, PlanItem
 
 
@@ -129,7 +130,7 @@ def patient_dict(db: Session, p: Patient, today: date | None = None) -> dict:
     upcoming = [i for i in item_dicts if i["status"] in ("PLANNED", "OVERDUE")]
     return {
         "id": p.id, "full_name": p.full_name, "birth_date": p.birth_date, "sex": p.sex,
-        "snils": p.snils, "oms": p.oms, "phone": p.phone,
+        "snils": p.snils, "oms": p.oms, "phone": p.phone, "email": p.email,
         "consent_notifications": p.consent_notifications, "preferred_channel": p.preferred_channel,
         "diagnosis_code": p.diagnosis_code, "nosology": p.nosology, "fibrosis_stage": p.fibrosis_stage,
         "cirrhosis": p.cirrhosis, "genotype": p.genotype, "viral_load": p.viral_load,
@@ -145,9 +146,16 @@ def patient_dict(db: Session, p: Patient, today: date | None = None) -> dict:
 
 
 def notify(db: Session, patient: Patient, kind: str, text: str, when: date | None = None) -> Notification:
+    """Поставить уведомление в журнал и, если это e-mail и SMTP включён, отправить письмо."""
     status = "QUEUED" if patient.consent_notifications else "SKIPPED_NO_CONSENT"
     n = Notification(patient_id=patient.id, channel=patient.preferred_channel, kind=kind,
                      text=text, status=status, scheduled_for=when or date.today())
+    if status == "QUEUED" and patient.preferred_channel == "email":
+        sent, error = mailer.send_email(patient.email, "ГепаНавигатор: напоминание", text)
+        if sent:
+            n.status = "SENT"
+        elif error:
+            n.status = "QUEUED"  # остаётся в очереди; причина видна в логах
     db.add(n)
     return n
 

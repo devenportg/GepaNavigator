@@ -30,8 +30,10 @@ class Patient(Base):
     snils: Mapped[str] = mapped_column(String(20), unique=True, index=True, nullable=True)
     oms: Mapped[str] = mapped_column(String(20), nullable=True)
     phone: Mapped[str] = mapped_column(String(30), nullable=True)
+    email: Mapped[str] = mapped_column(String(120), nullable=True)
     consent_notifications: Mapped[bool] = mapped_column(Boolean, default=False)
-    preferred_channel: Mapped[str] = mapped_column(String(20), default="sms")
+    # sms | email — email доставляется по SMTP
+    preferred_channel: Mapped[str] = mapped_column(String(20), default="email")
 
     diagnosis_code: Mapped[str] = mapped_column(String(10), default="B18.2")  # МКБ-10 B18.*
     nosology: Mapped[str] = mapped_column(String(20), default="HCV")  # HCV|HBV|HDV|MIXED

@@ -44,7 +44,8 @@ const focusPatient: Patient = {
   snils: null,
   phone: null,
   consent_notifications: false,
-  preferred_channel: "sms",
+  preferred_channel: "email",
+  email: "patient@example.ru",
   diagnosis_code: "B18.2",
   nosology: "HCV",
   fibrosis_stage: "F2",
@@ -134,7 +135,7 @@ describe("role-based navigation", () => {
       full_name: "Тестовый Новый Пациент",
       sex: "F",
       consent_notifications: true,
-      preferred_channel: "sms",
+      preferred_channel: "email",
     })));
   });
 

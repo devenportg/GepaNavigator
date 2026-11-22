@@ -5,7 +5,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-Channel = Literal["sms", "push", "gosuslugi"]
+Channel = Literal["sms", "email"]
 Nosology = Literal["HCV", "HBV", "HDV", "MIXED"]
 FibrosisStage = Literal["F0", "F1", "F2", "F3", "F4"]
 PatientStatus = Literal["ACTIVE", "ON_THERAPY", "POST_THERAPY", "DISCHARGED", "DECEASED"]
@@ -37,9 +37,10 @@ class PatientIn(BaseModel):
     snils: str | None = Field(default=None, max_length=20)
     oms: str | None = Field(default=None, max_length=20)
     phone: str | None = Field(default=None, max_length=30)
+    email: str | None = Field(default=None, max_length=120)
     # Opt-in: не предполагаем согласие, если его явно не передали.
     consent_notifications: bool = False
-    preferred_channel: Channel = "sms"
+    preferred_channel: Channel = "email"
     diagnosis_code: str = Field(default="B18.2", min_length=3, max_length=10)
     nosology: Nosology = "HCV"
     fibrosis_stage: FibrosisStage = "F1"
@@ -106,6 +107,7 @@ class PatientPatch(BaseModel):
     genotype: str | None = Field(default=None, max_length=20)
     viral_load: str | None = Field(default=None, max_length=50)
     phone: str | None = Field(default=None, max_length=30)
+    email: str | None = Field(default=None, max_length=120)
     consent_notifications: bool | None = None
     preferred_channel: Channel | None = None
     status: PatientStatus | None = None
@@ -213,7 +215,7 @@ class CareCompleteIn(BaseModel):
 
 class ConsentIn(BaseModel):
     consent_notifications: bool
-    preferred_channel: Channel = "sms"
+    preferred_channel: Channel = "email"
 
 
 class GisEventIn(BaseModel):

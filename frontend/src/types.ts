@@ -36,6 +36,7 @@ export interface Patient {
   sex: string;
   snils: string | null;
   phone: string | null;
+  email: string | null;
   consent_notifications: boolean;
   preferred_channel: string;
   diagnosis_code: string;

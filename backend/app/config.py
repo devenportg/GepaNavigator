@@ -30,5 +30,15 @@ class Settings(BaseSettings):
     yandexgpt_max_tokens: int = Field(default=1200, ge=64, le=4096)
     yandexgpt_temperature: float = Field(default=0.2, ge=0.0, le=1.0)
 
+    # E-mail notifications over SMTP. Disabled by default: the demo only queues messages.
+    smtp_enabled: bool = False
+    smtp_host: str = Field(default="localhost", max_length=200)
+    smtp_port: int = Field(default=587, ge=1, le=65535)
+    smtp_user: str = Field(default="", max_length=200)
+    smtp_password: SecretStr | None = Field(default=None, repr=False)
+    smtp_starttls: bool = True
+    smtp_from: str = Field(default="noreply@gepa.local", max_length=200)
+    smtp_timeout_seconds: int = Field(default=10, ge=1, le=60)
+
 
 settings = Settings()

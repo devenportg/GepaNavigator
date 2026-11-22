@@ -49,6 +49,30 @@ def upgrade_audit_org_column():
 
 
 upgrade_audit_org_column()
+
+
+def upgrade_notification_channel():
+    """E-mail вместо Госуслуг/push: добавляем patients.email и переносим каналы."""
+    inspector = inspect(engine)
+    tables = inspector.get_table_names()
+    if "patients" not in tables:
+        return
+    columns = {column["name"] for column in inspector.get_columns("patients")}
+    with engine.begin() as connection:
+        if "email" not in columns:
+            connection.execute(text("ALTER TABLE patients ADD COLUMN email VARCHAR(120)"))
+        if "notifications" in tables:
+            connection.execute(
+                text("UPDATE patients SET preferred_channel = 'email' "
+                     "WHERE preferred_channel IS NULL OR preferred_channel NOT IN ('sms', 'email')")
+            )
+            connection.execute(
+                text("UPDATE notifications SET channel = 'email' "
+                     "WHERE channel IS NULL OR channel NOT IN ('sms', 'email')")
+            )
+
+
+upgrade_notification_channel()
 Base.metadata.create_all(bind=engine)
 
 

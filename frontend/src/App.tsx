@@ -22,8 +22,9 @@ type NewPatientForm = {
   snils: string;
   oms: string;
   phone: string;
+  email: string;
   consent_notifications: boolean;
-  preferred_channel: "sms" | "push" | "gosuslugi";
+  preferred_channel: "sms" | "email";
   diagnosis_code: string;
   nosology: "HCV" | "HBV" | "HDV" | "MIXED";
   fibrosis_stage: "F0" | "F1" | "F2" | "F3" | "F4";
@@ -483,8 +484,8 @@ function Worklist({ onOpen, refreshToken, canCreate }: {
 
 function NewPatient({ onCreated, onCancel }: { onCreated: () => void; onCancel: () => void }) {
   const [form, setForm] = useState<NewPatientForm>({
-    full_name: "", birth_date: "", sex: "", snils: "", oms: "", phone: "",
-    consent_notifications: false, preferred_channel: "sms", diagnosis_code: "B18.2",
+    full_name: "", birth_date: "", sex: "", snils: "", oms: "", phone: "", email: "",
+    consent_notifications: false, preferred_channel: "email", diagnosis_code: "B18.2",
     nosology: "HCV", fibrosis_stage: "F1", cirrhosis: false,
   });
   const [error, setError] = useState("");
@@ -516,6 +517,7 @@ function NewPatient({ onCreated, onCancel }: { onCreated: () => void; onCancel: 
           <option value="">Выберите</option><option value="F">Женский</option><option value="M">Мужской</option>
         </select></label>
         <label className="field"><span>Телефон</span><input type="tel" value={form.phone} onChange={(event) => update("phone", event.target.value)} autoComplete="tel" /></label>
+        <label className="field"><span>E-mail для напоминаний</span><input type="email" value={form.email} onChange={(event) => update("email", event.target.value)} autoComplete="email" placeholder="patient@example.ru" /></label>
         <label className="field"><span>СНИЛС</span><input value={form.snils} onChange={(event) => update("snils", event.target.value)} placeholder="11 цифр" inputMode="numeric" /></label>
         <label className="field"><span>Полис ОМС</span><input value={form.oms} onChange={(event) => update("oms", event.target.value)} placeholder="16 цифр" inputMode="numeric" /></label>
       </div></div>
@@ -529,10 +531,10 @@ function NewPatient({ onCreated, onCancel }: { onCreated: () => void; onCancel: 
         </select></label>
         <label className="field check-field"><input type="checkbox" checked={form.cirrhosis} onChange={(event) => update("cirrhosis", event.target.checked)} /><span>У пациента цирроз печени</span></label>
       </div></div>
-      <div className="form-section consent-section"><div><h3>Уведомления</h3><p>Уведомления в MVP только записываются в журнал и не отправляются.</p></div>
+      <div className="form-section consent-section"><div><h3>Уведомления</h3><p>E-mail уходит по SMTP, если включён почтовый сервер; иначе сообщение ждёт в журнале.</p></div>
         <label className="field check-field"><input type="checkbox" checked={form.consent_notifications} onChange={(event) => update("consent_notifications", event.target.checked)} /><span>Получено согласие пациента</span></label>
         <label className="field"><span>Канал</span><select value={form.preferred_channel} disabled={!form.consent_notifications} onChange={(event) => update("preferred_channel", event.target.value as NewPatientForm["preferred_channel"])}>
-          <option value="sms">СМС (демо)</option><option value="push">Push (демо)</option><option value="gosuslugi">Госуслуги (демо)</option>
+          <option value="email">E-mail (SMTP)</option><option value="sms">СМС</option>
         </select></label>
       </div>
       <Feedback error={error} />
@@ -796,7 +798,7 @@ function PatientCard({ patientId, user, onClose }: { patientId: number; user: Us
           </div>
         </div>}
         {canConsent && <label className="consent-control"><input type="checkbox" checked={patient.consent_notifications} disabled={busy}
-          onChange={() => void toggleConsent()} /><span><b>Согласие на уведомления</b><small>{patient.consent_notifications ? `Канал: ${patient.preferred_channel}` : "Не получено — сообщения не ставятся в очередь"}</small></span></label>}
+          onChange={() => void toggleConsent()} /><span><b>Согласие на уведомления</b><small>{patient.consent_notifications ? `Канал: ${patient.preferred_channel === "email" ? `e-mail (${patient.email || "адрес не указан"})` : "СМС"}` : "Не получено — сообщения не ставятся в очередь"}</small></span></label>}
         <Feedback error={error} message={message} />
 
         <section className="drawer-section">
@@ -1065,12 +1067,12 @@ function Notifications({ refreshToken }: { refreshToken: number }) {
   return (
     <section className="page-section">
       <PageHeading eyebrow="Коммуникации" title="Уведомления" description="Демонстрационный журнал напоминаний и сообщений по пациентам." />
-      <div className="notice notice-info"><Icon name="bell" /><span><b>Сообщения не отправляются пациентам</b><small>В MVP это только записи в журнале; каналы СМС, push и Госуслуги не подключены.</small></span></div>
+      <div className="notice notice-info"><Icon name="bell" /><span><b>Канал доставки — e-mail по SMTP</b><small>Если почтовый сервер не настроен, сообщение остаётся в журнале со статусом «В очереди»; СМС и Госуслуги не используются.</small></span></div>
       <Feedback error={error} />
       <div className="table-card"><div className="table-card-heading"><div><h2>Журнал сообщений</h2><p>{loading ? "Загружаем…" : `${items.length} записей`}</p></div><button className="button button-secondary" onClick={() => void load()} disabled={loading}><Icon name="refresh" />Обновить</button></div>
         {loading && items.length === 0 ? <div className="empty-state"><span className="loading-spinner" />Загружаем журнал…</div> : items.length === 0 ? <div className="empty-state"><span className="empty-icon"><Icon name="bell" /></span><b>Пока нет сообщений</b><span>Записи появятся при создании плана и выполнении дневного пересчёта.</span></div> :
           <div className="table-scroll"><table className="data-table"><thead><tr><th>Пациент</th><th>Дата</th><th>Тип</th><th>Канал</th><th>Статус</th><th>Текст</th></tr></thead>
-            <tbody>{items.map((item) => <tr key={item.id}><td>№ {item.patient_id}</td><td>{fmtDate(item.scheduled_for)}</td><td>{item.kind}</td><td>{item.channel}</td>
+            <tbody>{items.map((item) => <tr key={item.id}><td>№ {item.patient_id}</td><td>{fmtDate(item.scheduled_for)}</td><td>{item.kind}</td><td>{item.channel === "email" ? "e-mail (SMTP)" : "СМС"}</td>
               <td><span className={`plan-status notification-status notification-${item.status.toLowerCase()}`}>{NOTIFICATION_STATUS_LABELS[item.status] ?? item.status}</span></td><td className="notification-text">{item.text}</td></tr>)}</tbody>
           </table></div>}
       </div>
