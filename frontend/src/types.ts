@@ -34,6 +34,7 @@ export interface Patient {
   full_name: string;
   birth_date: string;
   sex: string;
+  snils: string | null;
   phone: string | null;
   email: string | null;
   consent_notifications: boolean;

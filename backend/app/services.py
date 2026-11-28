@@ -123,7 +123,7 @@ def patient_dict(db: Session, p: Patient, today: date | None = None) -> dict:
     upcoming = [i for i in item_dicts if i["status"] in ("PLANNED", "OVERDUE")]
     return {
         "id": p.id, "full_name": p.full_name, "birth_date": p.birth_date, "sex": p.sex,
-        "oms": p.oms, "phone": p.phone, "email": p.email,
+        "oms": p.oms, "snils": p.snils, "phone": p.phone, "email": p.email,
         "consent_notifications": p.consent_notifications, "preferred_channel": p.preferred_channel,
         "diagnosis_code": p.diagnosis_code, "nosology": p.nosology, "fibrosis_stage": p.fibrosis_stage,
         "cirrhosis": p.cirrhosis, "genotype": p.genotype, "viral_load": p.viral_load,

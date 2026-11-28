@@ -4,7 +4,7 @@ import { PatientRow, ZoneBadge } from "./components";
 import type { Patient } from "./types";
 
 const patient: Patient = {
-  id: 1, full_name: "Иванов Иван Иванович", birth_date: "1980-01-01", sex: "M", phone: null, email: "patient@example.ru", consent_notifications: true, preferred_channel: "email",
+  id: 1, full_name: "Иванов Иван Иванович", birth_date: "1980-01-01", sex: "M", snils: null, phone: null, email: "patient@example.ru", consent_notifications: true, preferred_channel: "email",
   diagnosis_code: "B18.2", nosology: "HCV", fibrosis_stage: "F2", cirrhosis: false,
   genotype: null, viral_load: null, status: "ACTIVE", enrollment_trigger: "gis_event",
   enrolled_at: "2026-01-01", therapy_regimen: null, therapy_start: null, therapy_end: null,

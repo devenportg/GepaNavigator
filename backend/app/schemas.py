@@ -35,6 +35,7 @@ class PatientIn(BaseModel):
     birth_date: date
     sex: Literal["M", "F"] = "M"
     oms: str | None = Field(default=None, max_length=20)
+    snils: str | None = Field(default=None, max_length=11)
     phone: str | None = Field(default=None, max_length=30)
     email: str | None = Field(default=None, max_length=120)
     # Opt-in: не предполагаем согласие, если его явно не передали.
@@ -64,6 +65,16 @@ class PatientIn(BaseModel):
         digits = re.sub(r"\D", "", str(value))
         if len(digits) != 16:
             raise ValueError("Номер полиса ОМС должен содержать 16 цифр")
+        return digits
+
+    @field_validator("snils", mode="before")
+    @classmethod
+    def clean_snils(cls, value: str | None) -> str | None:
+        if value is None or (isinstance(value, str) and not value.strip()):
+            return None
+        digits = re.sub(r"\D", "", str(value))
+        if len(digits) != 11:
+            raise ValueError("СНИЛС должен содержать 11 цифр")
         return digits
 
     @field_validator("phone", "genotype", "viral_load", "enrollment_trigger", mode="before")

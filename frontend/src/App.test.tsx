@@ -41,6 +41,7 @@ const focusPatient: Patient = {
   full_name: "Тестовый Пациент",
   birth_date: "1981-01-02",
   sex: "M",
+  snils: null,
   phone: null,
   consent_notifications: false,
   preferred_channel: "email",
@@ -121,12 +122,13 @@ describe("role-based navigation", () => {
     activeUser = doctor;
     render(<App />);
     fireEvent.click(await screen.findByRole("button", { name: "Добавить пациента" }));
-    expect(screen.queryByLabelText(/снилс/i)).not.toBeInTheDocument();
+    expect(screen.getByLabelText("СНИЛС")).toBeInTheDocument();
     expect(screen.queryByText(/демо|демонстрац/i)).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("ФИО *"), { target: { value: "Тестовый Новый Пациент" } });
     fireEvent.change(screen.getByLabelText("Дата рождения *"), { target: { value: "1990-01-01" } });
     fireEvent.change(screen.getByLabelText("Пол *"), { target: { value: "F" } });
+    fireEvent.change(screen.getByLabelText("СНИЛС"), { target: { value: "12345678901" } });
     const consent = screen.getByLabelText("Получено согласие пациента");
     expect(consent).not.toBeChecked();
     fireEvent.click(consent);
@@ -135,6 +137,7 @@ describe("role-based navigation", () => {
     await waitFor(() => expect(post).toHaveBeenCalledWith("/api/patients", expect.objectContaining({
       full_name: "Тестовый Новый Пациент",
       sex: "F",
+      snils: "12345678901",
       consent_notifications: true,
       preferred_channel: "email",
     })));

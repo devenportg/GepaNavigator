@@ -28,6 +28,7 @@ class Patient(Base):
     birth_date: Mapped[date] = mapped_column(Date)
     sex: Mapped[str] = mapped_column(String(10), default="M")
     oms: Mapped[str] = mapped_column(String(20), nullable=True)
+    snils: Mapped[str] = mapped_column(String(11), nullable=True, index=True)
     phone: Mapped[str] = mapped_column(String(30), nullable=True)
     email: Mapped[str] = mapped_column(String(120), nullable=True)
     consent_notifications: Mapped[bool] = mapped_column(Boolean, default=False)

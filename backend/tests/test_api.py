@@ -11,7 +11,7 @@ from app.security import hash_password
 from tests.conftest import login
 
 PATIENT = {
-    "full_name": "Тестов Тест Тестович", "birth_date": "1990-05-10", "sex": "M", "oms": "1600000000999901", "phone": "+79170009901",
+    "full_name": "Тестов Тест Тестович", "birth_date": "1990-05-10", "sex": "M", "oms": "1600000000999901", "snils": "123-456-789 01", "phone": "+79170009901",
     "consent_notifications": True, "diagnosis_code": "B18.2",
     "nosology": "HCV", "fibrosis_stage": "F2", "cirrhosis": False,
 }
@@ -48,11 +48,17 @@ def test_create_patient_generates_plan_and_welcome(client, doctor):
     r = client.post("/api/patients", json=PATIENT, headers=doctor)
     assert r.status_code == 201, r.text
     p = r.json()
-    assert "snils" not in p
+    assert p["snils"] == "12345678901"
     assert p["zone"] in ("yellow", "green", "red")
     assert {i["kind"] for i in p["plan"]} >= {"VISIT", "LABS", "PCR"}
     notes = client.get(f"/api/notifications?patient_id={p['id']}", headers=doctor).json()
     assert any(n["kind"] == "WELCOME" and n["status"] == "QUEUED" for n in notes)
+
+
+def test_snils_must_contain_eleven_digits(client, doctor):
+    body = dict(PATIENT, full_name="Пациент с неверным СНИЛС", snils="12345")
+    response = client.post("/api/patients", json=body, headers=doctor)
+    assert response.status_code == 422
 
 
 def test_duplicate_patient_rejected(client, doctor):

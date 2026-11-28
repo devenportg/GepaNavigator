@@ -75,20 +75,23 @@ def upgrade_notification_channel():
 upgrade_notification_channel()
 
 
-def upgrade_remove_patient_snils():
-    """Remove the legacy patient identifier and its index from existing databases."""
+def upgrade_patient_snils():
+    """Restore the optional SNILS column for existing patient registries."""
     inspector = inspect(engine)
     if "patients" not in inspector.get_table_names():
         return
     columns = {column["name"] for column in inspector.get_columns("patients")}
     if "snils" not in columns:
-        return
-    with engine.begin() as connection:
-        connection.execute(text("DROP INDEX IF EXISTS ix_patients_snils"))
-        connection.execute(text("ALTER TABLE patients DROP COLUMN snils"))
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE patients ADD COLUMN snils VARCHAR(11)"))
+    indexes = {index["name"] for index in inspect(engine).get_indexes("patients")}
+    if "ix_patients_snils" not in indexes:
+        with engine.begin() as connection:
+            connection.execute(text("CREATE INDEX ix_patients_snils ON patients (snils)"))
 
 
-upgrade_remove_patient_snils()
+upgrade_patient_snils()
+
 Base.metadata.create_all(bind=engine)
 
 

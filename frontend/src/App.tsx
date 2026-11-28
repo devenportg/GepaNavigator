@@ -20,6 +20,7 @@ type NewPatientForm = {
   birth_date: string;
   sex: "" | "M" | "F";
   oms: string;
+  snils: string;
   phone: string;
   email: string;
   consent_notifications: boolean;
@@ -462,7 +463,7 @@ function Worklist({ onOpen, refreshToken, canCreate }: {
 
 function NewPatient({ onCreated, onCancel }: { onCreated: () => void; onCancel: () => void }) {
   const [form, setForm] = useState<NewPatientForm>({
-    full_name: "", birth_date: "", sex: "", oms: "", phone: "", email: "",
+    full_name: "", birth_date: "", sex: "", oms: "", snils: "", phone: "", email: "",
     consent_notifications: false, preferred_channel: "email", diagnosis_code: "B18.2",
     nosology: "HCV", fibrosis_stage: "F1", cirrhosis: false,
   });
@@ -497,6 +498,7 @@ function NewPatient({ onCreated, onCancel }: { onCreated: () => void; onCancel: 
         <label className="field"><span>Телефон</span><input type="tel" value={form.phone} onChange={(event) => update("phone", event.target.value)} autoComplete="tel" /></label>
         <label className="field"><span>E-mail для напоминаний</span><input type="email" value={form.email} onChange={(event) => update("email", event.target.value)} autoComplete="email" placeholder="patient@example.ru" /></label>
         <label className="field"><span>Полис ОМС</span><input value={form.oms} onChange={(event) => update("oms", event.target.value)} placeholder="16 цифр" inputMode="numeric" /></label>
+        <label className="field"><span>СНИЛС</span><input value={form.snils} onChange={(event) => update("snils", event.target.value)} placeholder="XXX-XXX-XXX XX" inputMode="numeric" maxLength={14} /></label>
       </div></div>
       <div className="form-section"><h3>Клиническая информация</h3><div className="form-grid">
         <label className="field"><span>Код МКБ-10 <i>*</i></span><input value={form.diagnosis_code} onChange={(event) => update("diagnosis_code", event.target.value)} required /></label>
@@ -762,6 +764,7 @@ function PatientCard({ patientId, user, onClose }: { patientId: number; user: Us
         </div>
         <div className="patient-facts">
           <div><span>Дата рождения</span><b>{fmtDate(patient.birth_date)}</b></div>
+          <div><span>СНИЛС</span><b>{patient.snils ?? "Не указан"}</b></div>
           <div><span>Телефон</span><b>{patient.phone ?? "Не указан"}</b></div>
           <div><span>Открытые события</span><b>{openPlanItems}</b></div>
         </div>
